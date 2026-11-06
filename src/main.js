@@ -111,8 +111,8 @@ function setupAnchors(scene) {
   scene.setAnchor(0, (w, h) => {
     const r = rect('#hero');
     return mobile
-      ? (() => { const sl = rect('#hero-slot'); const cy = sl.top - r.top + sl.height / 2 - 12; return { x: w * 0.5, y: cy + Math.min(0, r.top) * 0.35, size: Math.min(w * 0.74, h * 0.46) }; })()
-      : { x: w * 0.53, y: h * 0.45 + Math.min(0, r.top) * 0.35, size: Math.min(w * 0.34, 600) };
+      ? (() => { const sl = rect('#hero-slot'); const cy = sl.top - r.top + sl.height / 2 + 4; return { x: w * 0.5 + Math.min(0, r.top) * 0.9, y: cy + Math.min(0, r.top) * 0.2, scale: Math.min(w * 0.7, h * 0.38) / h * 6.3 / 4.4 }; })()
+      : { x: w * 0.575 + Math.min(0, r.top) * 0.9, y: h * 0.46 + Math.min(0, r.top) * 0.2, scale: Math.min(w * 0.4, 720) / h * 6.3 / 4.4 };
   });
   scene.setAnchor(1, (w, h) => ({ x: w * 0.5, y: h * 0.5, scale: mobile ? 0.6 : 1, z: -0.5 }));
   scene.setAnchor(2, (w, h) => {
@@ -146,13 +146,16 @@ function intro() {
   });
   // like the reference: the headline flies apart to both sides as you scroll away
   const st = { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true };
-  gsap.to('#hero .hero-left', { xPercent: -60, opacity: 0, ease: 'none', scrollTrigger: st });
-  gsap.to('#hero .hero-right', { xPercent: 60, opacity: 0, ease: 'none', scrollTrigger: st });
+  // like the reference: lines fly out alternately left, right, left, right
+  gsap.utils.toArray('#hero .hero-title .line').forEach((ln, i) => {
+    gsap.to(ln, { xPercent: i % 2 ? 90 : -90, opacity: 0, ease: 'none', scrollTrigger: st });
+  });
+  gsap.to('#hero .hero-left .pill, #hero .tag', { x: -120, opacity: 0, ease: 'none', scrollTrigger: st });
   gsap.to('#hero .hero-note', { opacity: 0, ease: 'none', scrollTrigger: st });
   gsap.fromTo('.side-card.left', { rotateY: 60, opacity: 0 }, { rotateY: 32, opacity: 1, ease: 'none', scrollTrigger: { trigger: '#speed', start: 'top 80%', end: 'top 20%', scrub: true } });
   gsap.fromTo('.side-card.right', { rotateY: -60, opacity: 0 }, { rotateY: -34, opacity: 1, ease: 'none', scrollTrigger: { trigger: '#speed', start: 'top 70%', end: 'top 10%', scrub: true } });
   // floating glass cards tilt as they enter
-  gsap.utils.toArray('.cell').forEach((c, i) => {
+  gsap.utils.toArray('.img-card').forEach((c, i) => {
     gsap.fromTo(c, { rotateX: 14, rotateY: i % 2 ? -6 : 6, transformPerspective: 1200 }, {
       rotateX: 0, rotateY: 0, ease: 'none', scrollTrigger: { trigger: c, start: 'top bottom', end: 'top 55%', scrub: true },
     });

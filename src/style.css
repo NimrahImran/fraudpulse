@@ -207,6 +207,25 @@ h3 { font-size: 22px; letter-spacing: -.02em; line-height: 1.2; }
 .side-card.left { left: 0; top: 10%; transform: rotateY(32deg) rotateX(4deg); transform-origin: left center; }
 .side-card.right { right: 0; top: 18%; transform: rotateY(-34deg) rotateX(4deg); transform-origin: right center; }
 
+/* 4 results: image cards rendered in Blender */
+.duo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+.img-card { position: relative; overflow: hidden; border-radius: var(--r); min-height: 340px; background: #03140d;
+  box-shadow: inset 0 0 0 1px var(--glass-line), 0 40px 80px -40px rgba(0,0,0,.8); }
+.img-card.tall { min-height: 520px; }
+.img-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(.2,.8,.2,1); }
+.img-card:hover img { transform: scale(1.05); }
+.img-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(164,227,207,.16); border-radius: inherit; }
+.img-text { position: absolute; left: 0; right: 0; padding: 26px; z-index: 1; }
+.img-text.bottom { bottom: 0; background: linear-gradient(to top, rgba(2,14,9,.92) 30%, rgba(2,14,9,.6) 70%, transparent); padding-top: 70px; }
+.img-text.top { top: 0; background: linear-gradient(to bottom, rgba(2,14,9,.9) 35%, transparent); padding-bottom: 60px; }
+.img-text .label { display: block; font-size: 14px; color: var(--mint); margin-bottom: 8px; font-family: var(--mono); letter-spacing: .04em; }
+.img-text h3 { font-size: clamp(20px, 1.8vw, 26px); line-height: 1.22; max-width: 26ch; font-weight: 500; }
+.img-text p { color: var(--text-2); font-size: 15px; margin: 10px 0 0; }
+.img-text .pill { margin-top: 16px; }
+.img-text .big-num { font-size: clamp(44px, 4.6vw, 72px); }
+.img-text .dots { margin-top: 14px; }
+
 /* 4 results */
 .pulse-ico { display: inline-flex; vertical-align: middle; width: 1.1em; height: .7em; color: var(--mint-2); filter: drop-shadow(0 0 8px rgba(127,224,191,.8)); }
 .pulse-ico svg { width: 100%; height: 100%; }
@@ -296,6 +315,8 @@ footer b { color: var(--text); font-weight: 600; }
   .scan-panel { transform: none; }
   .scanner-frame { max-width: 620px; width: 100%; margin: 0 auto; }
   .c-money, .c-caught, .c-fp, .c-vs, .c-ds { grid-column: span 12; }
+  .duo, .trio { grid-template-columns: minmax(0, 1fr); }
+  .img-card.tall { min-height: 460px; }
   .ds-grid { grid-template-columns: minmax(0, 1fr); }
   .beam-slot { height: 60vh; }
   .about-text { text-align: center; }

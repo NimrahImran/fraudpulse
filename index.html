@@ -181,35 +181,40 @@
           <h2 class="reveal">Built to <span class="pulse-ico" aria-hidden="true"><svg viewBox="0 0 40 20"><path d="M0 11 H11 L14 4 L19 17 L24 2 L27 11 H40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg></span> catch fraud,<br/>not honest customers.</h2>
           <p class="lead reveal">Tested on 80,000 card payments the AI had never seen before.</p>
         </div>
-        <div class="bento">
-          <div class="cell c-money reveal">
-            <div class="cell-art iso" aria-hidden="true"><div class="iso-floor"><i style="--h:30px;--x:0;--y:2"></i><i style="--h:52px;--x:1;--y:1"></i><i style="--h:40px;--x:2;--y:2"></i><i style="--h:74px;--x:2;--y:0"></i><i style="--h:96px;--x:3;--y:1"></i><i style="--h:120px;--x:3;--y:3" class="hot-b"></i></div></div>
-            <div class="cell-body">
-              <div class="label">Money saved</div>
-              <div class="big-num" id="r-money">$0</div>
-              <p id="r-money-sub"></p>
+        <div class="duo">
+          <div class="img-card c-grid reveal">
+            <img src="/img/3d/grid.webp" alt="" loading="lazy" decoding="async" />
+            <div class="img-text bottom"><span class="label">Every payment</span><h3>Every card payment becomes a point on the grid. FraudPulse watches them all, live.</h3></div>
+          </div>
+          <div class="img-card c-slab reveal">
+            <img src="/img/3d/slab.webp" alt="" loading="lazy" decoding="async" />
+            <div class="img-text top"><span class="label">Explainable</span><h3>Not just "fraud". Every decision comes with its reasons, in plain words.</h3></div>
+          </div>
+        </div>
+        <div class="trio">
+          <div class="img-card tall c-caps reveal">
+            <img src="/img/3d/capsules.webp" alt="" loading="lazy" decoding="async" />
+            <div class="img-text bottom">
+              <span class="label">Fraud caught</span>
+              <div class="big-num"><span id="r-caught">0</span><span class="unit"> of 100</span></div>
+              <div class="dots" id="r-dots" aria-hidden="true"></div>
             </div>
           </div>
-          <div class="cell c-caught reveal">
-            <div class="label">Fraud caught</div>
-            <div class="big-num"><span id="r-caught">0</span><span class="unit"> of 100</span></div>
-            <div class="dots" id="r-dots" aria-hidden="true"></div>
+          <div class="img-card tall c-icons reveal">
+            <img src="/img/3d/icons.webp" alt="" loading="lazy" decoding="async" />
+            <div class="img-text bottom">
+              <span class="label">Honest customers stopped</span>
+              <div class="big-num" id="r-fp">—</div>
+              <p id="r-fp-sub"></p>
+              <div id="r-vs"></div>
+            </div>
           </div>
-          <div class="cell c-fp reveal">
-            <div class="label">Honest customers stopped</div>
-            <div class="big-num" id="r-fp">—</div>
-            <p id="r-fp-sub"></p>
-          </div>
-          <div class="cell c-vs reveal">
-            <div class="label">FraudPulse vs bank rules</div>
-            <div id="r-vs"></div>
-            <p id="r-vs-sub"></p>
-          </div>
-          <div class="cell c-ds reveal">
-            <div class="cell-art art-ring" aria-hidden="true"></div>
-            <div class="cell-body">
-              <div class="label">For data scientists</div>
-              <p>ROC and precision-recall curves, confusion matrix, feature importance and the full model card.</p>
+          <div class="img-card tall c-ring reveal">
+            <img src="/img/3d/ring.webp" alt="" loading="lazy" decoding="async" />
+            <div class="img-text bottom">
+              <span class="label">Money saved on test data</span>
+              <div class="big-num" id="r-money">$0</div>
+              <p id="r-money-sub"></p>
               <button class="pill" type="button" id="ds-toggle" aria-expanded="false" aria-controls="ds-panel">Show technical details <span class="dot"></span></button>
             </div>
           </div>

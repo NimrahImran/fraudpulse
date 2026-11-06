@@ -17,13 +17,13 @@ Built by **Nimra Imran**, AI Engineer.
 
 ## The website
 
-A cinematic 3D scroll experience (Three.js particles with soft bloom on a dark mint glow):
+A cinematic 3D scroll experience: Three.js particles with soft bloom on a dark mint glow, plus glowing 3D visuals rendered in Blender (`ml/blender_assets.py`, scripted with `bpy`).
 
-1. **Hero:** a glowing particle credit card with a live heartbeat line
+1. **Hero:** a living particle wave that rises from the centre, flows right to left and breathes up and down
 2. **Problem:** the card dissolves into a dust sphere, then a column of light with fraud pooling at its base
 3. **Scanner:** pick a payment and scan it; the real model returns a risk score, a decision and its reasons
 4. **Speed:** dust falls into floating glass cards: real-time, explained, measured
-5. **Results:** money saved, fraud caught and false alarms on unseen data, plus a panel for data scientists (ROC, PR curve, confusion matrix, feature importance, model card)
+5. **Results:** Blender-rendered glowing cards with money saved, fraud caught and false alarms on unseen data, plus a panel for data scientists (ROC, PR curve, confusion matrix, feature importance, model card)
 6. **Contact and About**
 
 ## Model results (80,000 unseen test payments)
@@ -89,7 +89,7 @@ npm install
 npm run dev                                   # frontend, proxies /api to :8000
 ```
 
-Retrain: `python ml/train.py` · Tests: `pytest`
+Retrain: `python ml/train.py` · Tests: `pytest` · Re-render 3D visuals: `pip install bpy && python ml/blender_assets.py && python ml/glow_post.py`
 
 ---
 

@@ -137,3 +137,21 @@ export function ring(N) {
   }
   return out;
 }
+
+/** Organic mass for the hero: a bumpy, rock-like cloud that the shader turns into a moving wave. */
+export function blob(N) {
+  const out = new Float32Array(N * 3);
+  const bump = (x, y, z) => 1
+    + 0.16 * Math.sin(x * 2.3 + y * 1.1) * Math.cos(z * 1.9)
+    + 0.10 * Math.sin(x * 4.7 - z * 3.1 + 1.3)
+    + 0.06 * Math.cos(y * 6.1 + x * 2.2);
+  for (let i = 0; i < N; i++) {
+    const u = Math.random(), v = Math.random();
+    const th = 2 * Math.PI * u, ph = Math.acos(2 * v - 1);
+    let x = Math.sin(ph) * Math.cos(th), y = Math.cos(ph), z = Math.sin(ph) * Math.sin(th);
+    const shell = Math.random() < 0.6 ? 0.86 + Math.random() * 0.16 : Math.pow(Math.random(), 0.45) * 0.86;
+    const r = shell * bump(x, y, z);
+    out.set([x * r * 2.2, y * r * 1.45 - (y < -0.6 ? (y + 0.6) * 0.8 : 0), z * r * 1.45], i * 3);
+  }
+  return out;
+}

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { beam, card, CARD_W, ring, storm, stream } from './shapes.js';
+import { beam, blob, card, CARD_W, ring, storm, stream } from './shapes.js';
 
 const FOV = 35, CAM_Z = 10;
 const VIEW_H = 2 * CAM_Z * Math.tan((FOV / 2) * Math.PI / 180);
@@ -49,20 +49,28 @@ const bgFrag = /* glsl */`
 `;
 
 const pVert = /* glsl */`
-  attribute vec3 aCard, aStorm, aBeam, aRing, aStream;
+  attribute vec3 aCard, aStorm, aBeam, aRing, aStream, aBlob;
   attribute vec4 aRand;
   attribute float aPulse;
-  uniform float uShape, uTime, uPix, uSize, uAlert, uScanY, uScanOn;
+  uniform float uShape, uTime, uPix, uSize, uAlert, uScanY, uScanOn, uGrow;
   uniform vec3 uOff[7];
   uniform float uScl[7];
   uniform vec2 uRot0, uRot3;
-  varying float vFraud, vBand, vGlow, vCard, vEdge;
+  varying float vFraud, vBand, vGlow, vCard, vEdge, vHero;
 
   mat3 rotY(float a) { float c = cos(a), s = sin(a); return mat3(c, 0., -s, 0., 1., 0., s, 0., c); }
   mat3 rotX(float a) { float c = cos(a), s = sin(a); return mat3(1., 0., 0., 0., c, s, 0., -s, c); }
 
   vec3 shapePos(float i) {
-    if (i < 0.5) return rotY(uRot0.x) * rotX(uRot0.y) * aCard * uScl[0] + uOff[0];
+    if (i < 0.5) {
+      // living wave: crests travel right -> left and the mass breathes up and down
+      vec3 p = aBlob;
+      float w = sin(p.x * 1.7 + uTime * 1.5) * 0.22 + sin(p.x * 3.2 - p.z * 2.1 + uTime * 2.4) * 0.08;
+      p.y += w * 1.25 * (0.75 + 0.25 * sin(uTime * 0.6));
+      p.z += cos(p.x * 1.3 + uTime * 1.1) * 0.12;
+      p += normalize(aBlob + 1e-4) * sin(dot(aBlob, vec3(2.1, 1.7, 1.3)) * 2.0 + uTime * 2.0) * 0.05;
+      return rotY(uRot0.x * 0.5) * rotX(0.25 + uRot0.y * 0.3) * p * uScl[0] * uGrow + uOff[0];
+    }
     if (i < 1.5) return rotY(uTime * 0.07 + aRand.x * 0.15) * aStorm * uScl[1] + uOff[1];
     if (i < 2.5) {
       vec3 p = aBeam;
@@ -97,14 +105,15 @@ const pVert = /* glsl */`
     vec4 mv = modelViewMatrix * vec4(pos, 1.0);
     gl_Position = projectionMatrix * mv;
     vFraud = aRand.w;
-    float onCard = max(1.0 - smoothstep(0.0, 0.45, abs(uShape)), 1.0 - smoothstep(0.0, 0.45, abs(uShape - 3.0)));
+    float onCard = 1.0 - smoothstep(0.0, 0.45, abs(uShape - 3.0));
     vCard = 1.0 - smoothstep(0.0, 0.45, abs(uShape - 3.0));
     float sweep = mod(uTime * 1.0, 4.4) - 2.2;
     vGlow = aPulse * onCard * (0.6 + 1.4 * exp(-pow((aCard.x - sweep) / 0.4, 2.0)));
     vBand = uScanOn * vCard * exp(-pow((aCard.y / 1.07 - uScanY) / 0.08, 2.0));
     vEdge = onCard;
+    vHero = 1.0 - smoothstep(0.0, 0.5, uShape);
     // uniform, small, soft points: no sparkle
-    float size = uSize * (0.9 + aRand.y * 0.2) * (1.0 + vBand * 0.8);
+    float size = uSize * (0.9 + aRand.y * 0.2) * (1.0 + vBand * 0.8 + vHero * 0.35);
     gl_PointSize = size * uPix * (CAM_Z_F / -mv.z);
   }
 `.replace('CAM_Z_F', CAM_Z.toFixed(1));
@@ -112,7 +121,7 @@ const pVert = /* glsl */`
 const pFrag = /* glsl */`
   precision highp float;
   uniform float uShape, uAlert, uSafe, uAlpha;
-  varying float vFraud, vBand, vGlow, vCard, vEdge;
+  varying float vFraud, vBand, vGlow, vCard, vEdge, vHero;
   void main() {
     vec2 c = gl_PointCoord - 0.5;
     float r2 = dot(c, c);
@@ -127,7 +136,7 @@ const pFrag = /* glsl */`
     col = mix(col, warm, isFraud * redVis);
     col = mix(col, vec3(1.0, 0.3, 0.2), uAlert * vCard);
     col = mix(col, pale, vBand);
-    float a = soft * (0.2 + vGlow * 0.35 + vBand * 0.6 + uSafe * vCard * 0.12) * uAlpha;
+    float a = soft * (0.2 + vHero * 0.14 + vGlow * 0.35 + vBand * 0.6 + uSafe * vCard * 0.12) * uAlpha;
     a += soft * isFraud * redVis * 0.5 * uAlpha;
     gl_FragColor = vec4(col * a, a);
   }
@@ -201,10 +210,11 @@ export class Scene {
     g.setAttribute('aBeam', new THREE.BufferAttribute(beam(N, fraud), 3));
     g.setAttribute('aStream', new THREE.BufferAttribute(stream(N), 3));
     g.setAttribute('aRing', new THREE.BufferAttribute(ring(N), 3));
+    g.setAttribute('aBlob', new THREE.BufferAttribute(blob(N), 3));
     g.setAttribute('aRand', new THREE.BufferAttribute(rand, 4));
     this.uniforms = {
       uShape: { value: 0 }, uTime: { value: 0 }, uPix: { value: this.dpr }, uSize: { value: mobile ? 2.6 : 2.3 },
-      uAlert: { value: 0 }, uSafe: { value: 0 }, uScanY: { value: -1 }, uScanOn: { value: 0 }, uAlpha: { value: 1 },
+      uAlert: { value: 0 }, uSafe: { value: 0 }, uScanY: { value: -1 }, uScanOn: { value: 0 }, uAlpha: { value: 1 }, uGrow: { value: 0.05 },
       uOff: { value: Array.from({ length: SHAPES }, () => new THREE.Vector3()) },
       uScl: { value: new Array(SHAPES).fill(1) },
       uRot0: { value: new THREE.Vector2() }, uRot3: { value: new THREE.Vector2() },
@@ -288,6 +298,7 @@ export class Scene {
     u.uSafe.value += (s.safe - u.uSafe.value) * ease;
     u.uScanOn.value += (s.scanOn - u.uScanOn.value) * ease * 2;
     u.uScanY.value = s.scanY;
+    u.uGrow.value += (1 - u.uGrow.value) * (1 - Math.pow(0.12, dt)); // the wave rises from the centre on load
     u.uTime.value = t;
     u.uRot0.value.set(-0.42 + Math.sin(t * 0.35) * 0.3 + this.mouseEase.x * 0.35, -0.28 + Math.sin(t * 0.27) * 0.08 - this.mouseEase.y * 0.2);
     u.uRot3.value.set(Math.sin(t * 0.5) * 0.14 + this.mouseEase.x * 0.1, Math.sin(t * 0.4) * 0.05);

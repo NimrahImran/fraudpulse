@@ -16,21 +16,21 @@ export function initResults(m) {
   dots.innerHTML = '<i></i>'.repeat(100);
 
   ScrollTrigger.create({
-    trigger: '#results .bento', start: 'top 80%', once: true,
+    trigger: '#results .trio', start: 'top 85%', once: true,
     onEnter: () => {
       countUp($('#r-money'), at.net, (v) => usd(v), 2);
       countUp($('#r-caught'), caught, int, 1.6);
       [...dots.children].forEach((d, i) => setTimeout(() => d.classList.toggle('on', i < caught), 300 + i * 14));
     },
   });
-  $('#r-money-sub').textContent = `Out of ${int(fraudTotal)} fraud payments, FraudPulse stopped ${int(at.tp)}, even after paying for every false alarm.`;
+  $('#r-money-sub').textContent = `${int(at.tp)} of ${int(fraudTotal)} frauds stopped, after paying for every false alarm.`;
   const fpRate = at.fp / (at.fp + at.tn);
   $('#r-fp').textContent = `1 in ${int(1 / fpRate)}`;
-  $('#r-fp-sub').textContent = 'Honest payments that were wrongly flagged. Those go to a quick human check, not a hard decline.';
+  $('#r-fp-sub').textContent = 'And those go to a quick human check, not a hard decline.';
   const b = m.baseline;
   const row = (name, v, col) => `<div class="vs-row"><span>${name}</span><div class="vs-bar"><i style="width:${v * 100}%;background:${col}"></i></div><b>${pct(v)}</b></div>`;
   $('#r-vs').innerHTML = row('FraudPulse', at.recall, 'var(--mint-2)') + row('Bank rules', b.recall, 'var(--gold)');
-  $('#r-vs-sub').textContent = `Simple rules catch ${pct(b.recall)} of fraud with ${int(b.fp)} false alarms. FraudPulse catches ${pct(at.recall)} with ${int(at.fp)}.`;
+  if ($('#r-vs-sub')) $('#r-vs-sub').textContent = `Simple rules catch ${pct(b.recall)} of fraud with ${int(b.fp)} false alarms. FraudPulse catches ${pct(at.recall)} with ${int(at.fp)}.`;
 
   // data scientist panel
   const toggle = $('#ds-toggle');
