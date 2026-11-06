@@ -1,4 +1,4 @@
-"""FraudLens API: real-time card fraud scoring with explanations.
+"""FraudPulse API: real-time card fraud scoring with explanations.
 
 Runs as a single Vercel Python function (all /api/* routes are rewritten here)
 and locally with:  uvicorn api.index:app --reload
@@ -27,7 +27,7 @@ Category = Literal["grocery", "fuel", "restaurants", "fashion", "electronics", "
 Channel = Literal["chip_in_store", "contactless", "online", "atm"]
 
 app = FastAPI(
-    title="FraudLens API",
+    title="FraudPulse API",
     version=VERSION,
     description=(
         "Real-time card fraud detection. Send a transaction, get a risk score, "

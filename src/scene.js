@@ -1,72 +1,64 @@
 import * as THREE from 'three';
-import { beam, card, ring, shield, storm, CARD_W } from './shapes.js';
+import { beam, card, CARD_W, ring, storm } from './shapes.js';
 
 const FOV = 35, CAM_Z = 10;
-const VIEW_H = 2 * CAM_Z * Math.tan((FOV / 2) * Math.PI / 180); // world height visible at z=0
+const VIEW_H = 2 * CAM_Z * Math.tan((FOV / 2) * Math.PI / 180);
 
-const silkVert = /* glsl */`
+// shapes: 0 hero card · 1 dust sphere · 2 light beam · 3 scanner card · 4 results cloud · 5 contact ring
+export const SHAPES = 6;
+
+const bgVert = /* glsl */`
   varying vec2 vUv;
   void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }
 `;
 
-// Animated silk in the exact mint palette taken from the reference fabric.
-const silkFrag = /* glsl */`
+// deep green room with a mint light falling from the top, slow fog
+const bgFrag = /* glsl */`
   precision highp float;
   varying vec2 vUv;
-  uniform float uTime, uScroll, uAspect;
+  uniform float uTime, uAspect, uLight;
   uniform vec2 uMouse;
 
-  vec3 palette(float t) {
-    vec3 c0 = vec3(0.243, 0.459, 0.380); // #3E7561
-    vec3 c1 = vec3(0.427, 0.604, 0.541); // #6D9A8A
-    vec3 c2 = vec3(0.533, 0.694, 0.643); // #88B1A4
-    vec3 c3 = vec3(0.643, 0.776, 0.741); // #A4C6BD
-    vec3 c4 = vec3(0.800, 0.882, 0.855);
-    vec3 c5 = vec3(0.925, 0.960, 0.945);
-    if (t < 0.2) return mix(c0, c1, t / 0.2);
-    if (t < 0.42) return mix(c1, c2, (t - 0.2) / 0.22);
-    if (t < 0.64) return mix(c2, c3, (t - 0.42) / 0.22);
-    if (t < 0.84) return mix(c3, c4, (t - 0.64) / 0.2);
-    return mix(c4, c5, clamp((t - 0.84) / 0.16, 0.0, 1.0));
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float noise(vec2 p) {
+    vec2 i = floor(p), f = fract(p);
+    float a = hash(i), b = hash(i + vec2(1, 0)), c = hash(i + vec2(0, 1)), d = hash(i + vec2(1, 1));
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
   }
-
-  float folds(vec2 p, float t) {
-    float h = sin(p.x * 1.15 + 1.9 * sin(p.y * 0.9 + t * 0.11) + t * 0.07);
-    h += 0.65 * sin(p.x * 0.55 - p.y * 1.6 + 1.2 * sin(p.x * 0.8 - t * 0.09) + 2.0);
-    h += 0.35 * sin((p.x + p.y) * 2.1 + t * 0.15 + sin(p.y * 2.4) * 0.8);
-    return h;
-  }
+  float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a * noise(p); p *= 2.0; a *= 0.5; } return v; }
 
   void main() {
-    vec2 p = (vUv - 0.5) * vec2(uAspect, 1.0) * 3.2;
-    p += vec2(uMouse.x * 0.12, uMouse.y * 0.08);
-    p.y += uScroll * 0.9;
-    float t = uTime;
-    float e = 0.015;
-    float h = folds(p, t);
-    float hx = folds(p + vec2(e, 0.0), t);
-    float hy = folds(p + vec2(0.0, e), t);
-    vec3 n = normalize(vec3(-(hx - h) / e, -(hy - h) / e, 2.4));
-    vec3 L = normalize(vec3(-0.45, 0.6, 0.65));
-    float diff = clamp(dot(n, L), 0.0, 1.0);
-    vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));
-    float spec = pow(clamp(dot(n, H), 0.0, 1.0), 26.0);
-    float shade = 0.12 + diff * 0.78 + spec * 0.5;
-    vec3 col = palette(clamp(shade, 0.0, 1.0));
-    float vig = smoothstep(1.25, 0.25, length((vUv - 0.5) * vec2(1.0, 1.25)));
-    col *= mix(0.86, 1.0, vig);
+    vec2 uv = vUv;
+    vec2 p = (uv - 0.5) * vec2(uAspect, 1.0);
+    vec3 deep = vec3(0.008, 0.035, 0.024);
+    vec3 mid = vec3(0.035, 0.16, 0.11);
+    // room glow, brighter towards the top centre
+    float room = smoothstep(1.2, 0.0, length(p * vec2(0.8, 1.1) - vec2(uMouse.x * 0.04, 0.18)));
+    vec3 col = mix(deep, mid, room * 0.9);
+    // light cone from the top
+    float cone = smoothstep(0.42, 0.0, abs(p.x) - (1.0 - uv.y) * 0.18) * smoothstep(0.0, 1.0, uv.y);
+    col += vec3(0.25, 0.75, 0.55) * cone * 0.22 * uLight;
+    float top = exp(-pow((uv.y - 1.0) / 0.05, 2.0)) * smoothstep(0.35, 0.0, abs(p.x));
+    col += vec3(0.55, 1.0, 0.8) * top * 0.35 * uLight;
+    // drifting fog
+    float f = fbm(p * 2.2 + vec2(uTime * 0.02, -uTime * 0.015));
+    col += vec3(0.05, 0.18, 0.13) * f * 0.35;
+    // vignette
+    col *= mix(0.55, 1.0, smoothstep(1.15, 0.2, length(p * vec2(0.9, 1.0))));
     gl_FragColor = vec4(col, 1.0);
   }
 `;
 
 const pVert = /* glsl */`
-  attribute vec3 aCard, aStorm, aBeam, aRing, aShield;
+  attribute vec3 aCard, aStorm, aBeam, aRing;
   attribute vec4 aRand;
-  uniform float uShape, uTime, uPix, uSize, uAlert, uSafe, uScanY, uScanOn;
+  attribute float aPulse;
+  uniform float uShape, uTime, uPix, uSize, uAlert, uScanY, uScanOn;
   uniform vec3 uOff[6];
   uniform float uScl[6];
   uniform vec2 uRot0, uRot3;
-  varying float vDepth, vFraud, vBand, vAlpha, vCardness;
+  varying float vFraud, vBand, vGlow, vCard, vDepth;
 
   mat3 rotY(float a) { float c = cos(a), s = sin(a); return mat3(c, 0., -s, 0., 1., 0., s, 0., c); }
   mat3 rotX(float a) { float c = cos(a), s = sin(a); return mat3(1., 0., 0., 0., c, s, 0., -s, c); }
@@ -74,78 +66,76 @@ const pVert = /* glsl */`
   vec3 shapePos(float i) {
     if (i < 0.5) return rotY(uRot0.x) * rotX(uRot0.y) * aCard * uScl[0] + uOff[0];
     if (i < 1.5) {
-      float a = uTime * 0.06 + aRand.x * 0.3;
-      vec3 p = rotY(a) * aStorm;
-      p.y += sin(uTime * 0.5 + aRand.y * 6.28) * 0.12;
+      vec3 p = rotY(uTime * 0.08 + aRand.x * 0.2) * aStorm;
+      p += 0.06 * vec3(sin(uTime * 0.7 + aRand.y * 9.0), cos(uTime * 0.6 + aRand.z * 9.0), 0.0);
       return p * uScl[1] + uOff[1];
     }
     if (i < 2.5) {
       vec3 p = aBeam;
-      p.y = mod(p.y + 3.0 + uTime * (0.25 + aRand.z * 0.5) * step(-2.9, aBeam.y), 6.4) - 3.0;
-      return rotY(uTime * 0.2) * p * uScl[2] + uOff[2];
+      if (aBeam.y > -2.9) p.y = mod(p.y + 3.0 + uTime * (0.35 + aRand.z * 0.6), 6.6) - 3.0;
+      return rotY(uTime * 0.25) * p * uScl[2] + uOff[2];
     }
     if (i < 3.5) {
       vec3 p = rotY(uRot3.x) * rotX(uRot3.y) * aCard;
-      p += (aRand.yzw - 0.5) * 0.12 * uAlert * sin(uTime * 30.0 + aRand.x * 50.0);
+      p += (aRand.yzw - 0.5) * 0.1 * uAlert * sin(uTime * 28.0 + aRand.x * 50.0);
       return p * uScl[3] + uOff[3];
     }
-    if (i < 4.5) return rotX(0.42) * rotY(uTime * 0.05) * aRing * uScl[4] + uOff[4];
-    return rotY(sin(uTime * 0.4) * 0.35) * aShield * uScl[5] + uOff[5];
+    if (i < 4.5) return rotY(uTime * 0.03) * aStorm * uScl[4] + uOff[4];
+    return rotX(1.1 + sin(uTime * 0.3) * 0.15) * rotY(uTime * 0.12) * aRing * uScl[5] + uOff[5];
   }
 
   void main() {
     float s0 = floor(uShape);
     float s1 = min(s0 + 1.0, 5.0);
     float f = uShape - s0;
-    float d = aRand.x * 0.45;
-    float k = smoothstep(d, d + 0.55, f);
+    float d = aRand.x * 0.4;
+    float k = smoothstep(d, d + 0.6, f);
     vec3 pos = mix(shapePos(s0), shapePos(s1), k);
     float burst = sin(k * 3.14159);
-    pos += (aRand.yzw - 0.5) * burst * 2.4;
-    pos.y -= burst * burst * 0.8 * aRand.z; // dust falls a little while it travels
-    pos += 0.012 * vec3(sin(uTime * 1.3 + aRand.x * 40.0), cos(uTime * 1.1 + aRand.y * 40.0), 0.0);
+    pos += (aRand.yzw - 0.5) * burst * 2.2;
+    pos.y -= burst * burst * 1.4 * aRand.z;   // dust falls while it travels
 
     vec4 mv = modelViewMatrix * vec4(pos, 1.0);
     gl_Position = projectionMatrix * mv;
-    vDepth = clamp((mv.z + 13.0) / 6.0, 0.0, 1.0);
+    vDepth = clamp((mv.z + 14.0) / 7.0, 0.0, 1.0);
     vFraud = aRand.w;
-    float cardness = (1.0 - smoothstep(0.0, 0.5, abs(uShape - 3.0))) ;
-    vCardness = cardness;
-    vBand = uScanOn * cardness * exp(-pow((aCard.y / 1.07 - uScanY) / 0.08, 2.0));
-    vAlpha = 1.0;
-    float size = uSize * (0.75 + aRand.y * 0.7) * (1.0 + vBand * 1.6);
+    float onCard = max(1.0 - smoothstep(0.0, 0.45, abs(uShape)), 1.0 - smoothstep(0.0, 0.45, abs(uShape - 3.0)));
+    vCard = 1.0 - smoothstep(0.0, 0.45, abs(uShape - 3.0));
+    float sweep = mod(uTime * 1.1, 4.4) - 2.2;
+    vGlow = aPulse * onCard * (0.35 + 1.6 * exp(-pow((aCard.x - sweep) / 0.35, 2.0)));
+    vBand = uScanOn * vCard * exp(-pow((aCard.y / 1.07 - uScanY) / 0.07, 2.0));
+    float size = uSize * (0.6 + aRand.y * 0.8) * (1.0 + vBand * 1.5 + vGlow * 0.6);
     gl_PointSize = size * uPix * (CAM_Z_F / -mv.z);
   }
 `.replace('CAM_Z_F', CAM_Z.toFixed(1));
 
 const pFrag = /* glsl */`
   precision highp float;
-  uniform float uShape, uAlert, uSafe, uAlpha, uRedOn;
-  varying float vDepth, vFraud, vBand, vAlpha, vCardness;
+  uniform float uShape, uAlert, uSafe, uAlpha;
+  varying float vFraud, vBand, vGlow, vCard, vDepth;
   void main() {
     vec2 c = gl_PointCoord - 0.5;
     float r = length(c);
     if (r > 0.5) discard;
-    float soft = smoothstep(0.5, 0.15, r);
-    vec3 deep = vec3(0.05, 0.17, 0.13);
-    vec3 pearl = vec3(1.0, 0.99, 0.965);
-    vec3 col = mix(deep, pearl, smoothstep(0.25, 0.75, vDepth));
-    float redVis = smoothstep(0.6, 1.0, uShape) * (1.0 - smoothstep(2.4, 2.9, uShape)) * uRedOn;
-    vec3 red = vec3(0.86, 0.2, 0.15);
-    col = mix(col, red, step(0.5, vFraud) * redVis);
-    col = mix(col, red, uAlert * vCardness * (0.55 + 0.45 * step(0.5, fract(vFraud * 7.0 + 0.3))));
-    col = mix(col, vec3(0.80, 1.0, 0.90), uSafe * vCardness * 0.6);
-    col = mix(col, pearl, vBand);
-    float a = soft * (0.8 + vDepth * 0.2) * uAlpha;
-    a = max(a, step(0.5, vFraud) * redVis * soft * uAlpha);
-    gl_FragColor = vec4(col, a);
+    float core = exp(-r * r * 22.0);
+    vec3 mint = vec3(0.50, 0.95, 0.76);
+    vec3 pale = vec3(0.86, 1.0, 0.94);
+    vec3 col = mix(mint, pale, 0.3 + vGlow * 0.5);
+    float redVis = smoothstep(1.2, 1.8, uShape) * (1.0 - smoothstep(2.4, 2.9, uShape));
+    vec3 hot = vec3(1.0, 0.42, 0.22);
+    float isFraud = step(0.5, vFraud);
+    col = mix(col, hot, isFraud * redVis);
+    col = mix(col, vec3(1.0, 0.28, 0.2), uAlert * vCard);
+    col = mix(col, pale, vBand);
+    float a = core * (0.4 + vDepth * 0.25 + vGlow * 0.5 + vBand * 0.8 + uSafe * vCard * 0.25) * uAlpha;
+    a += core * isFraud * redVis * 0.9 * uAlpha;
+    gl_FragColor = vec4(col * a, a);
   }
 `;
 
 export class Scene {
   constructor(canvas, { mobile }) {
     this.mobile = mobile;
-    this.canvas = canvas;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
     this.dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.6 : 1.75);
     this.renderer.setPixelRatio(this.dpr);
@@ -155,48 +145,46 @@ export class Scene {
     this.mouse = new THREE.Vector2();
     this.mouseEase = new THREE.Vector2();
     this.clock = new THREE.Clock();
-    this.state = { shape: 0, alpha: 1, alert: 0, safe: 0, scanY: -1, scanOn: 0 };
-    this.anchors = {}; // shape index -> () => {x, y, sizePx}
+    this.state = { shape: 0, alpha: 1, light: 1, alert: 0, safe: 0, scanY: -1, scanOn: 0 };
+    this.anchors = {};
 
-    // silk background
-    this.silk = new THREE.Mesh(
-      new THREE.PlaneGeometry(2, 2),
-      new THREE.ShaderMaterial({
-        vertexShader: silkVert, fragmentShader: silkFrag, depthTest: false, depthWrite: false,
-        uniforms: { uTime: { value: 0 }, uScroll: { value: 0 }, uAspect: { value: 1 }, uMouse: { value: new THREE.Vector2() } },
-      }),
-    );
-    this.silk.frustumCulled = false;
-    this.silk.renderOrder = -1;
-    this.scene.add(this.silk);
+    this.bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+      vertexShader: bgVert, fragmentShader: bgFrag, depthTest: false, depthWrite: false,
+      uniforms: { uTime: { value: 0 }, uAspect: { value: 1 }, uLight: { value: 1 }, uMouse: { value: new THREE.Vector2() } },
+    }));
+    this.bg.frustumCulled = false;
+    this.bg.renderOrder = -1;
+    this.scene.add(this.bg);
 
-    // particles
-    const N = mobile ? 9000 : 17000;
+    const N = mobile ? 15000 : 32000;
     const fraud = new Uint8Array(N);
-    for (let i = 0; i < N; i++) fraud[i] = Math.random() < 0.012 ? 1 : 0;
+    for (let i = 0; i < N; i++) fraud[i] = Math.random() < 0.018 ? 1 : 0;
     const rand = new Float32Array(N * 4);
     for (let i = 0; i < N; i++) rand.set([Math.random(), Math.random(), Math.random(), fraud[i]], i * 4);
+    const c = card(N);
     const g = new THREE.BufferGeometry();
-    const cardPts = card(N);
-    g.setAttribute('position', new THREE.BufferAttribute(cardPts, 3));
-    g.setAttribute('aCard', new THREE.BufferAttribute(cardPts, 3));
+    g.setAttribute('position', new THREE.BufferAttribute(c.pos, 3));
+    g.setAttribute('aCard', new THREE.BufferAttribute(c.pos, 3));
+    g.setAttribute('aPulse', new THREE.BufferAttribute(c.pulse, 1));
     g.setAttribute('aStorm', new THREE.BufferAttribute(storm(N), 3));
     g.setAttribute('aBeam', new THREE.BufferAttribute(beam(N, fraud), 3));
     g.setAttribute('aRing', new THREE.BufferAttribute(ring(N), 3));
-    g.setAttribute('aShield', new THREE.BufferAttribute(shield(N), 3));
     g.setAttribute('aRand', new THREE.BufferAttribute(rand, 4));
     this.uniforms = {
-      uShape: { value: 0 }, uTime: { value: 0 }, uPix: { value: this.dpr }, uSize: { value: mobile ? 3.1 : 3.0 },
+      uShape: { value: 0 }, uTime: { value: 0 }, uPix: { value: this.dpr }, uSize: { value: mobile ? 3.4 : 3.2 },
       uAlert: { value: 0 }, uSafe: { value: 0 }, uScanY: { value: -1 }, uScanOn: { value: 0 }, uAlpha: { value: 1 },
-      uRedOn: { value: 1 },
-      uOff: { value: Array.from({ length: 6 }, () => new THREE.Vector3()) },
-      uScl: { value: [1, 1, 1, 1, 1, 1] },
+      uOff: { value: Array.from({ length: SHAPES }, () => new THREE.Vector3()) },
+      uScl: { value: new Array(SHAPES).fill(1) },
       uRot0: { value: new THREE.Vector2() }, uRot3: { value: new THREE.Vector2() },
     };
     this.points = new THREE.Points(g, new THREE.ShaderMaterial({
       vertexShader: pVert, fragmentShader: pFrag, uniforms: this.uniforms,
       transparent: true, depthWrite: false, depthTest: false,
+      blending: THREE.CustomBlending, blendEquation: THREE.AddEquation,
+      blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
     }));
+    this.points.material.blending = THREE.AdditiveBlending;
+    this.points.material.premultipliedAlpha = true;
     this.points.frustumCulled = false;
     this.scene.add(this.points);
 
@@ -220,10 +208,9 @@ export class Scene {
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
-    this.silk.material.uniforms.uAspect.value = w / h;
+    this.bg.material.uniforms.uAspect.value = w / h;
   }
 
-  // screen pixel -> world point on z=0 plane
   toWorld(px, py, out) {
     out.set((px / this.w - 0.5) * VIEW_H * (this.w / this.h), -(py / this.h - 0.5) * VIEW_H, 0);
     return out;
@@ -261,13 +248,13 @@ export class Scene {
     u.uScanOn.value += (s.scanOn - u.uScanOn.value) * ease * 2;
     u.uScanY.value = s.scanY;
     u.uTime.value = t;
-    u.uRot0.value.set(Math.sin(t * 0.35) * 0.45 + this.mouseEase.x * 0.45, -0.18 + Math.sin(t * 0.27) * 0.08 - this.mouseEase.y * 0.25);
-    u.uRot3.value.set(Math.sin(t * 0.5) * 0.18 + this.mouseEase.x * 0.15, Math.sin(t * 0.4) * 0.05);
+    u.uRot0.value.set(-0.42 + Math.sin(t * 0.35) * 0.3 + this.mouseEase.x * 0.35, -0.28 + Math.sin(t * 0.27) * 0.08 - this.mouseEase.y * 0.2);
+    u.uRot3.value.set(Math.sin(t * 0.5) * 0.16 + this.mouseEase.x * 0.12, Math.sin(t * 0.4) * 0.05);
     this.updateAnchors();
-    const su = this.silk.material.uniforms;
-    su.uTime.value = t;
-    su.uMouse.value.copy(this.mouseEase);
-    su.uScroll.value = (window.scrollY || 0) / Math.max(1, document.body.scrollHeight) ;
+    const bu = this.bg.material.uniforms;
+    bu.uTime.value = t;
+    bu.uMouse.value.copy(this.mouseEase);
+    bu.uLight.value += (s.light - bu.uLight.value) * ease;
     this.renderer.render(this.scene, this.camera);
   }
 }

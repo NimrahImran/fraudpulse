@@ -1,38 +1,29 @@
-# FraudLens · AI fraud detection
+# FraudPulse · AI fraud detection
 
 [![CI](https://github.com/NimrahImran/fraudlens/actions/workflows/ci.yml/badge.svg)](https://github.com/NimrahImran/fraudlens/actions/workflows/ci.yml)
-[![Live demo](https://img.shields.io/badge/live%20demo-fraudlens--three.vercel.app-3e7561)](https://fraudlens-three.vercel.app)
-[![License: MIT](https://img.shields.io/badge/license-MIT-88b1a4)](LICENSE)
+[![Live demo](https://img.shields.io/badge/live%20demo-online-7fe0bf)](https://fraudlens-three.vercel.app)
+[![License: MIT](https://img.shields.io/badge/license-MIT-a4e3cf)](LICENSE)
 
-**Catching card fraud before it lands, with the reason behind every decision.**
+**Catching every fraud on the pulse.** FraudPulse checks every card payment the moment it
+happens, decides in under a millisecond, and explains why.
 
 **Live:** https://fraudlens-three.vercel.app · **API docs:** https://fraudlens-three.vercel.app/api/docs
 
-![FraudLens](public/og-image.jpg)
-
-FraudLens is an end-to-end fraud detection product: a LightGBM model trained on heavily
-imbalanced card payments, a FastAPI scoring service with explanations, and an immersive
-3D web interface (Three.js) that lets anyone scan a transaction, watch a live feed and
-see what the model is worth in money.
+![FraudPulse](public/og-image.jpg)
 
 Built by **Nimra Imran**, AI Engineer.
 
 ---
 
-## What's inside
+## The website
 
-| | |
-|---|---|
-| **3D interface** | Particle credit card that morphs into a transaction storm, a light beam, a scanner card and a shield as you scroll, on an animated mint-silk background |
-| **Card scanner** | Live demo: enter a payment, the real model returns a 0-100 risk score, a block / review / approve decision and its reasons |
-| **Explainable AI** | Every prediction comes with plain-language reasons (tree-path attribution) shown as flip cards |
-| **Live feed** | A stream of payments scored in real time, with counters for money protected and decision time |
-| **Business results** | Money saved, catch rate, false alarms, comparison with bank rules, and a strictness slider |
-| **For data scientists** | ROC and precision-recall curves, confusion matrix at any threshold, feature importance, model card |
-| **Savings calculator** | A business enters its own volume and fraud rate and sees yearly savings |
-| **CSV + PDF** | Upload up to 5,000 payments, download scored results or a PDF report |
-| **Analyst review** | Borderline and blocked payments land in a queue to confirm or release |
-| **REST API** | `/api/predict`, `/api/predict/batch`, interactive docs at `/api/docs` |
+A cinematic, five-scene 3D experience (Three.js particles on a dark mint glow):
+
+1. **Hero:** a glowing particle credit card with a live heartbeat line
+2. **Problem:** the card dissolves into dust and becomes a beam of payments, with fraud pooling at the base
+3. **Scanner:** pick a payment and scan it; the real model returns a risk score, a decision and its reasons
+4. **Results:** money saved, fraud caught and false alarms on unseen data, plus a panel for data scientists (ROC, PR curve, confusion matrix, feature importance, model card)
+5. **Contact and About**
 
 ## Model results (80,000 unseen test payments)
 
@@ -40,69 +31,34 @@ Built by **Nimra Imran**, AI Engineer.
 |---|---|
 | ROC-AUC | **0.98** |
 | PR-AUC (average precision) | **0.83** (random baseline 0.004) |
-| Fraud caught (recall) at chosen threshold | **83%** |
-| Precision at chosen threshold | **60%** |
+| Fraud caught (recall) | **83%** |
+| Precision | **60%** |
 | Honest payments wrongly flagged | **1 in 450** |
 | Net money saved on the test set | **$262,061** |
 | Typical rule set ("amount > $1,000 OR foreign country") | 46% recall, 2,024 false alarms |
 
-### How the imbalance is handled
-Fraud is 0.4% of payments, so accuracy is meaningless (a model that approves everything is
-99.6% accurate). Instead of naive oversampling, FraudLens keeps calibrated probabilities and
-tunes the decision threshold on a validation set to **maximise net money saved**, counting
-$15 per false alarm and a $25 chargeback fee per missed fraud.
+**Imbalance:** fraud is 0.4% of payments, so accuracy is meaningless. FraudPulse keeps
+calibrated probabilities and tunes the decision threshold on validation data to maximise net
+money saved ($15 per false alarm, $25 chargeback fee per missed fraud).
 
-### Data
-Public fraud datasets hide their columns behind PCA (V1...V28), which makes a live,
-explainable demo impossible. `ml/data.py` generates 400,000 realistic payments with readable
-features and five fraud patterns (card cloning, account takeover, card-testing bots,
-bust-out accounts, stealth fraud). **The model is a demo trained on synthetic data and should
-be retrained on real data before production use.**
+**Data:** public fraud datasets hide their columns behind PCA, which makes an explainable demo
+impossible. `ml/data.py` generates 400,000 realistic payments with readable features and five
+fraud patterns. The model is a demo trained on synthetic data and should be retrained on real
+data before production use.
 
-### Serving on Vercel
-LightGBM is too large for a serverless function, so the trained trees are exported to JSON
-and evaluated by a ~60-line pure-Python engine (`api/engine.py`). A test verifies it matches
-LightGBM to 1e-7. One prediction takes about 0.1 ms. The same model also runs in the browser
-as a fallback ("edge mode") if the API is unreachable.
+**Serving:** the trained LightGBM trees are exported to JSON and evaluated by a small
+pure-Python engine (`api/engine.py`), verified identical to LightGBM, so the API fits in a
+Vercel function. One prediction takes about 0.1 ms.
 
-## Project structure
+## API
 
-```
-api/            FastAPI app (Vercel serverless function)
-  index.py      routes, validation, risk score
-  engine.py     dependency-free tree ensemble + explanations
-  reasons.py    plain-language reasons
-  feed.py       synthetic live stream
-  model/        exported model.json + metrics.json
-ml/             data generator and training script
-src/            frontend (Vite, Three.js, GSAP, Lenis)
-  scene.js      silk shader + morphing particles
-  ui/           scanner, reasons, feed, results, tools, API docs
-public/         static assets (photo, model copy for edge mode)
-tests/          API and engine tests
-```
-
-## Run locally
-
-```bash
-# backend
-pip install -r requirements-dev.txt
-uvicorn api.index:app --reload --port 8000
-
-# frontend (proxies /api to :8000)
-npm install
-npm run dev
-```
-
-Retrain the model: `python ml/train.py` · Run tests: `pytest`
-
-## Deploy (free)
-
-The repo is ready for Vercel: `vercel.json` builds the frontend with Vite and serves
-`api/index.py` as a Python function. Import the GitHub repo in Vercel and deploy, no
-settings needed.
-
-## API example
+| Method | Path | |
+|---|---|---|
+| POST | `/api/predict` | Score one payment, with reasons |
+| POST | `/api/predict/batch` | Score up to 5,000 payments |
+| GET | `/api/feed` | Synthetic scored stream |
+| GET | `/api/model` | Metrics, curves, threshold table |
+| GET | `/api/health` | Status |
 
 ```bash
 curl -X POST https://fraudlens-three.vercel.app/api/predict \
@@ -112,18 +68,28 @@ curl -X POST https://fraudlens-three.vercel.app/api/predict \
        "account_age_days":900,"failed_attempts_1h":3}'
 ```
 
-```json
-{
-  "risk_score": 100,
-  "decision": "block",
-  "probability": 0.99743,
-  "reasons": [
-    {"title": "3 failed attempts", "detail": "Wrong PIN or CVV entered just before, as if someone is guessing.", "direction": "raises"},
-    {"title": "30× the usual spend", "detail": "This customer normally spends about $62.", "direction": "raises"}
-  ]
-}
+## Project structure
+
 ```
+api/        FastAPI app (Vercel function): routes, tree engine, reasons, demo stream
+ml/         data generator and training script
+src/        frontend (Vite, Three.js, GSAP, Lenis)
+public/     static assets
+tests/      API and engine tests
+```
+
+## Run locally
+
+```bash
+pip install -r requirements-dev.txt
+uvicorn api.index:app --reload --port 8000   # backend
+
+npm install
+npm run dev                                   # frontend, proxies /api to :8000
+```
+
+Retrain: `python ml/train.py` · Tests: `pytest`
 
 ---
 
-© Nimra Imran · FraudLens
+© Nimra Imran · FraudPulse

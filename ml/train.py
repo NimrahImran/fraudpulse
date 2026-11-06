@@ -1,4 +1,4 @@
-"""Train the FraudLens model and export everything the app needs.
+"""Train the FraudPulse model and export everything the app needs.
 
 Outputs (written to ../api/model/):
   model.json    compact tree ensemble served by the dependency-free engine
@@ -147,7 +147,7 @@ def export_model(booster: lgb.Booster):
 
         walk(t["tree_structure"])
         trees.append(nodes)
-    model = dict(name="FraudLens LightGBM", features=FEATURES, categories=CATEGORIES,
+    model = dict(name="FraudPulse LightGBM", features=FEATURES, categories=CATEGORIES,
                  channels=CHANNELS, trees=trees)
     (OUT / "model.json").write_text(json.dumps(model, separators=(",", ":")))
     print("model.json KB:", round((OUT / "model.json").stat().st_size / 1024))

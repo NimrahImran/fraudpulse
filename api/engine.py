@@ -1,4 +1,4 @@
-"""Dependency-free inference engine for the FraudLens tree ensemble.
+"""Dependency-free inference engine for the FraudPulse tree ensemble.
 
 LightGBM is a large native library; Vercel's Python functions have a strict
 size budget. The trained trees are exported to JSON and walked here in plain

@@ -1,4 +1,4 @@
-"""Synthetic card-transaction generator for FraudLens.
+"""Synthetic card-transaction generator for FraudPulse.
 
 Public fraud datasets (e.g. the Kaggle ULB set) hide every column behind PCA
 (V1..V28), which makes a live demo impossible to explain to a business user.

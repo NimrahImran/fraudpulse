@@ -11,9 +11,7 @@
   "dependencies": {
     "@fontsource-variable/inter-tight": "^5.1.0",
     "@fontsource-variable/jetbrains-mono": "^5.1.1",
-    "@tabler/icons": "^3.24.0",
     "gsap": "3.12.5",
-    "jspdf": "2.5.2",
     "lenis": "1.1.18",
     "three": "0.170.0"
   },
