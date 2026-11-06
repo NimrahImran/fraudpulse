@@ -55,13 +55,13 @@ export function card(N) {
   for (let i = 0; i < N; i++) {
     const t = Math.random();
     let x, y, z;
-    if (t < 0.46) { // body volume
+    if (t < 0.3) { // faint body haze
       do { x = rnd(-W / 2, W / 2); y = rnd(-H / 2, H / 2); } while (!inRoundRect(x, y, W, H, R));
-      z = gauss() * 0.05;
-    } else if (t < 0.66) { // bright rim
+      z = gauss() * 0.12;
+    } else if (t < 0.62) { // bright rim
       [x, y] = roundRectPerimeter(W, H, R);
-      x += gauss() * 0.012; y += gauss() * 0.012; z = gauss() * 0.06;
-    } else if (t < 0.76) { // chip
+      x += gauss() * 0.018; y += gauss() * 0.018; z = gauss() * 0.05;
+    } else if (t < 0.72) { // chip
       const cx = -1.08, cy = 0.55, cw = 0.5, ch = 0.38;
       if (Math.random() < 0.5) { [x, y] = roundRectPerimeter(cw, ch, 0.07); x += cx; y += cy; }
       else { x = cx + rnd(-cw / 2, cw / 2); y = cy + rnd(-ch / 2, ch / 2); }
@@ -103,6 +103,23 @@ export function beam(N, fraud) {
       if (t < 0.5) { const w = 0.05 + (1 - (Math.random())) * 0.05; x = gauss() * w; z = gauss() * w; y = rnd(-3, 3.6); }
       else if (t < 0.85) { const yy = rnd(-3, 3.6); const s = 0.12 + Math.pow((3.6 - yy) / 6.6, 3) * 0.55; x = gauss() * s; z = gauss() * s; y = yy; }
       else { const a = rnd(0, Math.PI * 2), r = Math.pow(Math.random(), 0.7) * 1.9; x = Math.cos(a) * r; z = Math.sin(a) * r * 0.45; y = -3 + gauss() * 0.05; }
+    }
+    out.set([x, y, z], i * 3);
+  }
+  return out;
+}
+
+/** Dust waterfall: particles drift down from above into a card below (y = 0 is the card top). */
+export function stream(N) {
+  const out = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    let x, y, z;
+    if (Math.random() < 0.8) {
+      y = rnd(0, 5);
+      const s = 0.08 + Math.pow(1 - y / 5, 2.2) * 0.85;
+      x = gauss() * s; z = gauss() * s * 0.5;
+    } else { // dust settling over the card
+      x = rnd(-1.7, 1.7); y = -Math.abs(gauss()) * 0.5; z = gauss() * 0.15;
     }
     out.set([x, y, z], i * 3);
   }

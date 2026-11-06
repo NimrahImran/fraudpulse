@@ -17,13 +17,14 @@ Built by **Nimra Imran**, AI Engineer.
 
 ## The website
 
-A cinematic, five-scene 3D experience (Three.js particles on a dark mint glow):
+A cinematic 3D scroll experience (Three.js particles with soft bloom on a dark mint glow):
 
 1. **Hero:** a glowing particle credit card with a live heartbeat line
-2. **Problem:** the card dissolves into dust and becomes a beam of payments, with fraud pooling at the base
+2. **Problem:** the card dissolves into a dust sphere, then a column of light with fraud pooling at its base
 3. **Scanner:** pick a payment and scan it; the real model returns a risk score, a decision and its reasons
-4. **Results:** money saved, fraud caught and false alarms on unseen data, plus a panel for data scientists (ROC, PR curve, confusion matrix, feature importance, model card)
-5. **Contact and About**
+4. **Speed:** dust falls into floating glass cards: real-time, explained, measured
+5. **Results:** money saved, fraud caught and false alarms on unseen data, plus a panel for data scientists (ROC, PR curve, confusion matrix, feature importance, model card)
+6. **Contact and About**
 
 ## Model results (80,000 unseen test payments)
 

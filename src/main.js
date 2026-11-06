@@ -19,7 +19,7 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // particle brightness and top light per section
 const LOOK = {
-  hero: [1, 1], flow: [1, 0.8], problem: [1, 0.6], scanner: [1, 1], results: [0.5, 0.7], contact: [1, 0.9], about: [0.35, 0.7],
+  hero: [1, 1], flow: [1, 0.8], problem: [1, 0.55], scanner: [1, 1], speed: [1, 0.9], results: [0.45, 0.7], contact: [1, 0.9], about: [0.3, 0.7],
 };
 
 const loader = {
@@ -95,7 +95,7 @@ async function boot() {
   window.addEventListener('resize', updateScroll);
   updateScroll();
 
-  const navOf = { hero: 'hero', flow: 'hero', problem: 'hero', scanner: 'scanner', results: 'results', contact: 'contact', about: 'about' };
+  const navOf = { hero: 'hero', flow: 'hero', problem: 'hero', scanner: 'scanner', speed: 'results', results: 'results', contact: 'contact', about: 'about' };
   const io = new IntersectionObserver((es) => es.forEach((e) => {
     if (!e.isIntersecting) return;
     $$('.dock a').forEach((a) => a.classList.toggle('active', a.dataset.sec === navOf[e.target.id]));
@@ -112,19 +112,23 @@ function setupAnchors(scene) {
     const r = rect('#hero');
     return mobile
       ? (() => { const sl = rect('#hero-slot'); const cy = sl.top - r.top + sl.height / 2 - 12; return { x: w * 0.5, y: cy + Math.min(0, r.top) * 0.35, size: Math.min(w * 0.74, h * 0.46) }; })()
-      : { x: w * 0.55, y: h * 0.43 + Math.min(0, r.top) * 0.35, size: Math.min(w * 0.3, 540) };
+      : { x: w * 0.53, y: h * 0.45 + Math.min(0, r.top) * 0.35, size: Math.min(w * 0.34, 600) };
   });
   scene.setAnchor(1, (w, h) => ({ x: w * 0.5, y: h * 0.5, scale: mobile ? 0.6 : 1, z: -0.5 }));
-  scene.setAnchor(2, () => {
+  scene.setAnchor(2, (w, h) => {
     const r = rect('#beam-anchor');
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2, scale: mobile ? 0.55 : 0.85 };
+    return { x: mobile ? w * 0.5 : Math.min(r.left + r.width * 0.42, w * 0.66), y: r.top + r.height / 2, scale: mobile ? 0.55 : 0.9 };
   });
   scene.setAnchor(3, () => {
     const a = rect('#scan-anchor'), f = rect('#scanner-frame');
-    return { x: a.left, y: a.top, size: f.width * (mobile ? 0.62 : 0.5), z: 0.4 };
+    return { x: a.left, y: a.top, size: f.width * (mobile ? 0.6 : 0.33), z: 0.4 };
   });
-  scene.setAnchor(4, (w, h) => ({ x: w * 0.5, y: h * 0.5, scale: mobile ? 1.1 : 1.7, z: -4 }));
-  scene.setAnchor(5, (w, h) => {
+  scene.setAnchor(4, () => {
+    const c = rect('#stream-card');
+    return { x: c.left + c.width / 2, y: c.top + 6, scale: scene.pxToWorld(c.width * 0.9) / 3.4, z: 0.2 };
+  });
+  scene.setAnchor(5, (w, h) => ({ x: w * 0.5, y: h * 0.5, scale: mobile ? 1.1 : 1.7, z: -4 }));
+  scene.setAnchor(6, (w, h) => {
     const r = rect('#contact');
     const cy = Math.min(Math.max(r.top + r.height * 0.42, -h), h * 2);
     const px = mobile ? w * 0.64 : Math.min(w, h) * 0.4;
@@ -145,6 +149,8 @@ function intro() {
   gsap.to('#hero .hero-left', { xPercent: -60, opacity: 0, ease: 'none', scrollTrigger: st });
   gsap.to('#hero .hero-right', { xPercent: 60, opacity: 0, ease: 'none', scrollTrigger: st });
   gsap.to('#hero .hero-note', { opacity: 0, ease: 'none', scrollTrigger: st });
+  gsap.fromTo('.side-card.left', { rotateY: 60, opacity: 0 }, { rotateY: 32, opacity: 1, ease: 'none', scrollTrigger: { trigger: '#speed', start: 'top 80%', end: 'top 20%', scrub: true } });
+  gsap.fromTo('.side-card.right', { rotateY: -60, opacity: 0 }, { rotateY: -34, opacity: 1, ease: 'none', scrollTrigger: { trigger: '#speed', start: 'top 70%', end: 'top 10%', scrub: true } });
   // floating glass cards tilt as they enter
   gsap.utils.toArray('.cell').forEach((c, i) => {
     gsap.fromTo(c, { rotateX: 14, rotateY: i % 2 ? -6 : 6, transformPerspective: 1200 }, {
