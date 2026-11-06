@@ -1,6 +1,14 @@
 # FraudLens · AI fraud detection
 
+[![CI](https://github.com/NimrahImran/fraudlens/actions/workflows/ci.yml/badge.svg)](https://github.com/NimrahImran/fraudlens/actions/workflows/ci.yml)
+[![Live demo](https://img.shields.io/badge/live%20demo-fraudlens--three.vercel.app-3e7561)](https://fraudlens-three.vercel.app)
+[![License: MIT](https://img.shields.io/badge/license-MIT-88b1a4)](LICENSE)
+
 **Catching card fraud before it lands, with the reason behind every decision.**
+
+**Live:** https://fraudlens-three.vercel.app · **API docs:** https://fraudlens-three.vercel.app/api/docs
+
+![FraudLens](public/og-image.jpg)
 
 FraudLens is an end-to-end fraud detection product: a LightGBM model trained on heavily
 imbalanced card payments, a FastAPI scoring service with explanations, and an immersive
@@ -97,7 +105,7 @@ settings needed.
 ## API example
 
 ```bash
-curl -X POST https://<your-app>.vercel.app/api/predict \
+curl -X POST https://fraudlens-three.vercel.app/api/predict \
   -H "Content-Type: application/json" \
   -d '{"amount":1840,"customer_avg_amount":62,"hour":3,"merchant_category":"electronics",
        "channel":"online","distance_km":12,"new_device":true,"txn_count_24h":4,
