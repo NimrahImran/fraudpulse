@@ -50,6 +50,10 @@ data before production use.
 pure-Python engine (`api/engine.py`), verified identical to LightGBM, so the API fits in a
 Vercel function. One prediction takes about 0.1 ms.
 
+## Contact form
+
+The contact form sends messages through [Web3Forms](https://web3forms.com) (free). Add the access key as the environment variable `VITE_WEB3FORMS_KEY` in Vercel and redeploy; messages then arrive in your inbox. No email address is shown on the site.
+
 ## API
 
 | Method | Path | |

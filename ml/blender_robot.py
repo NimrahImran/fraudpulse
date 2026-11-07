@@ -16,7 +16,7 @@ OUT = os.path.join(HERE, "..", "public", "img")
 SRC = next((a for a in sys.argv[1:] if a.endswith(".glb")), os.path.join(HERE, "Xbot.glb"))
 SAMPLES = int(os.environ.get("SAMPLES", "160"))
 RES = int(os.environ.get("RES", "100"))
-YAW = float(os.environ.get("YAW", "-48"))
+YAW = float(os.environ.get("YAW", "-34"))
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sc = bpy.context.scene
@@ -52,10 +52,11 @@ def glow(name, strength):
     return m
 
 
-SHELL = principled("shell", (0.006, 0.006, 0.007, 1), 0.4, 0.1, coat=1.0)
-SEAM = principled("seam", (0.03, 0.025, 0.025, 1), 1.0, 0.28)
+SHELL = principled("shell", (0.01, 0.01, 0.011, 1), 1.0, 0.06, coat=1.0)
+SEAM = principled("seam", (0.02, 0.018, 0.018, 1), 1.0, 0.12)
 LINE = glow("line", 3.0)
-EYE = glow("eye", 9.0)
+EYE = glow("eye", 14.0)
+VISOR = glow("visor", 1.2)
 
 bpy.ops.import_scene.gltf(filepath=SRC)
 for o in list(bpy.data.objects):
@@ -108,7 +109,7 @@ def smooth(vals, k=2):
     return [sum(vals[(i + j) % n] for j in range(-k, k + 1)) / (2 * k + 1) for i in range(n)]
 
 
-def horizontal_band(z, lift, bevel, mat, bins=90):
+def horizontal_band(z, lift, bevel, mat, bins=90, centre=None, span=None):
     sl = [p for p in pts if abs(p.z - z) < 0.006]
     radius = [0.0] * bins
     for p in sl:
@@ -121,8 +122,12 @@ def horizontal_band(z, lift, bevel, mat, bins=90):
     out = []
     for i, r in enumerate(radius):
         a = (i + 0.5) / bins * 2 * math.pi - math.pi
+        if span is not None and abs((a - centre + math.pi) % (2 * math.pi) - math.pi) > span:
+            continue
         out.append(Vector((cx + math.cos(a) * (r + lift), cy + math.sin(a) * (r + lift), z)))
-    return curve_from(out, bevel, mat, True)
+    if span is not None:   # keep the arc in order, starting on one side of the face
+        out.sort(key=lambda q: (math.atan2(q.y - cy, q.x - cx) - centre + math.pi) % (2 * math.pi))
+    return curve_from(out, bevel, mat, span is None)
 
 
 def crest(lift, bevel, mat, bins=60):
@@ -141,17 +146,19 @@ def crest(lift, bevel, mat, bins=60):
     return curve_from(out, bevel, mat, False)
 
 
-horizontal_band(ez, 0.0018, 0.0026, EYE)          # red visor band through the eyes
-horizontal_band(ez + 0.032, 0.001, 0.0012, LINE)  # thin seam above it
-crest(0.001, 0.0014, LINE)                        # line over the top of the helmet
-for e in eyes:                                    # brighter eye cores
+# like the reference: only two glowing eyes on a dark visor, no lines over the helmet
+front = math.atan2(fwd.y, fwd.x)
+horizontal_band(ez, 0.0012, 0.0011, VISOR, centre=front, span=math.radians(38))   # faint visor slit
+for e in eyes:                                    # bright eye cores
     d = Vector((e.x - cx, e.y - cy, 0)); d.normalize()
     sl = [p for p in pts if abs(p.z - ez) < 0.006]
     near = [math.hypot(p.x - cx, p.y - cy) for p in sl if (Vector((p.x - cx, p.y - cy, 0)).normalized()).dot(d) > 0.96]
     r = max(near) if near else max(rx, ry)
-    pos = Vector((cx + d.x * (r + 0.003), cy + d.y * (r + 0.003), ez))
+    pos = Vector((cx + d.x * (r + 0.002), cy + d.y * (r + 0.002), ez))
     bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, location=pos)
-    s = bpy.context.object; s.scale = (0.011, 0.011, 0.005); s.data.materials.append(EYE)
+    s = bpy.context.object; s.scale = (0.018, 0.018, 0.0075); s.data.materials.append(EYE)
+    bpy.ops.object.light_add(type="POINT", location=pos + Vector((d.x, d.y, 0)) * 0.03)   # eye glow spilling on the face
+    gl = bpy.context.object; gl.data.energy = 2.5; gl.data.color = (1, 0.04, 0.02); gl.data.shadow_soft_size = 0.01
 
 # turn everything so the robot looks to the left of the frame
 bpy.ops.object.empty_add(location=(0, 0, 0))
@@ -162,20 +169,26 @@ for o in bpy.data.objects:
 pivot.rotation_euler = (0, 0, math.radians(YAW) - math.atan2(fwd.x, -fwd.y))
 
 
-def area(loc, target, energy, color, size):
+def area(loc, target, energy, color, size, size_y=None):
     bpy.ops.object.light_add(type="AREA", location=loc)
     l = bpy.context.object
-    l.data.energy = energy; l.data.color = color; l.data.size = size
+    l.data.energy = energy; l.data.color = color
+    if size_y:                                    # long thin strip light -> long edge highlights
+        l.data.shape = "RECTANGLE"; l.data.size = size; l.data.size_y = size_y
+    else:
+        l.data.size = size
     l.rotation_euler = (Vector(target) - Vector(loc)).to_track_quat("-Z", "Y").to_euler()
 
 
-C = Vector((0, 0, 1.5))
-# small, hard lights: thin red edge highlights on a mostly black glossy shell (like the reference)
-area((0.7, 1.0, 2.1), C, 70, (1, 0.03, 0.02), 0.06)       # red rim, back right
-area((-0.9, 0.8, 1.9), C, 50, (1, 0.04, 0.02), 0.06)      # red rim, back left
-area((1.0, -0.1, 1.6), C, 22, (1, 0.03, 0.02), 0.05)      # red edge on the right cheek
-area((-0.6, -1.3, 2.3), C, 10, (1, 0.94, 0.94), 0.05)      # tiny white key for gloss
-area((0.0, -1.0, 1.0), C, 1.2, (1, 0.05, 0.03), 0.6)      # faint red bounce
+C = Vector((0, 0, 1.45))
+RED = (1, 0.03, 0.02)
+# black glossy shell shaped only by long red strip reflections along its edges (like the reference)
+area((0.9, 0.9, 1.6), C, 160, RED, 0.06, 1.6)       # strip, back right
+area((-1.0, 0.7, 1.6), C, 130, RED, 0.06, 1.6)      # strip, back left
+area((1.1, -0.4, 1.6), C, 70, RED, 0.05, 1.4)       # strip on the right cheek and shoulder
+area((0.0, 0.4, 2.6), C, 60, RED, 0.06, 0.9)        # strip above: top edge of the helmet
+area((-0.9, -1.1, 1.9), C, 18, (1, 0.03, 0.02), 0.5) # soft red fill so the black reads as glossy
+area((-0.6, -1.3, 2.3), C, 10, (1, 0.94, 0.94), 0.05) # tiny white key for gloss
 
 bpy.ops.object.camera_add(location=(0.18, -1.3, 1.6))
 cam = bpy.context.object

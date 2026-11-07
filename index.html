@@ -65,7 +65,7 @@
           <span class="pin" style="left:47.5%;top:30%"><svg viewBox="0 0 24 32"><path d="M12 1C6 1 1.5 5.6 1.5 11.4 1.5 19 12 31 12 31s10.5-12 10.5-19.6C22.5 5.6 18 1 12 1Z" fill="#ff1f2d"/><circle cx="12" cy="11.5" r="4.2" fill="#2a0205"/></svg></span>
         </div>
         <div class="robot" id="robot">
-          <img src="/img/robot.webp" alt="Glossy black AI android with a glowing red visor, the FraudLens guardian" width="508" height="1120" fetchpriority="high" />
+          <img src="/img/robot.webp" alt="Glossy black AI android with a glowing red visor, the FraudLens guardian" width="598" height="1103" fetchpriority="high" />
         </div>
 
         <div class="float f1" aria-hidden="true">
@@ -233,16 +233,21 @@
           <p class="eyebrow">Contact</p>
           <h2>Let's stop fraud<br />together</h2>
           <p class="sec-lead">Want FraudLens for your business, or need an AI engineer for your team? Send a message and I will reply soon.</p>
-          <a class="mail" href="mailto:nimrahimran28@gmail.com"><span class="f-ico"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="#fff" stroke-width="1.8"/><path d="m4 7 8 6 8-6" fill="none" stroke="#ff3b45" stroke-width="1.8"/></svg></span>nimrahimran28@gmail.com</a>
+          <ul class="contact-points">
+            <li><span class="f-ico"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z" fill="none" stroke="#fff" stroke-width="1.8"/><path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="#ff3b45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>FraudLens for your payments</li>
+            <li><span class="f-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M4 21c1-4.5 4.4-7 8-7s7 2.5 8 7" fill="none" stroke="#ff3b45" stroke-width="1.8" stroke-linecap="round"/></svg></span>An AI engineer for your team</li>
+          </ul>
         </div>
         <form class="panel contact-form reveal" id="contact-form" novalidate>
+          <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
           <div class="row2">
-            <div class="field"><label for="c-name">Your name</label><input id="c-name" autocomplete="name" placeholder="Sara Khan" /><div class="field-err"></div></div>
-            <div class="field"><label for="c-email">Email</label><input id="c-email" type="email" autocomplete="email" placeholder="sara@company.com" /><div class="field-err"></div></div>
+            <div class="field"><label for="c-name">Your name</label><input id="c-name" name="name" autocomplete="name" placeholder="Sara Khan" /><div class="field-err"></div></div>
+            <div class="field"><label for="c-email">Email</label><input id="c-email" name="email" type="email" autocomplete="email" placeholder="sara@company.com" /><div class="field-err"></div></div>
           </div>
-          <div class="field"><label for="c-msg">Message</label><textarea id="c-msg" rows="5" placeholder="We process 200k card payments a month and want to cut fraud."></textarea><div class="field-err"></div></div>
-          <button class="btn-red" type="submit">Send message</button>
+          <div class="field"><label for="c-msg">Message</label><textarea id="c-msg" name="message" rows="5" placeholder="We process 200k card payments a month and want to cut fraud."></textarea><div class="field-err"></div></div>
+          <button class="btn-red" type="submit" id="c-send">Send message</button>
           <div class="form-ok" id="form-ok" role="status"></div>
+          <div class="err-box" id="form-err" role="alert"></div>
         </form>
       </div>
     </section>

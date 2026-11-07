@@ -13,7 +13,8 @@ import { $, $$, fieldError } from './util.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const CONTACT_EMAIL = 'nimrahimran28@gmail.com';
+// Web3Forms access key (free). Set VITE_WEB3FORMS_KEY in Vercel; messages then arrive in your inbox.
+const FORM_KEY = import.meta.env.VITE_WEB3FORMS_KEY || '';
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine = window.matchMedia('(pointer: fine)').matches;
 
@@ -96,15 +97,38 @@ function initContact() {
     ['#c-msg', (v) => (v.trim().length < 10 ? 'Write a short message (10+ characters)' : '')],
   ];
   form.addEventListener('input', (e) => fieldError(e.target, ''));
-  form.addEventListener('submit', (e) => {
+  const btn = $('#c-send');
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    $('#form-ok').textContent = ''; $('#form-err').textContent = '';
     let ok = true;
     for (const [sel, fn] of rules) { const el = $(sel); const m = fn(el.value); fieldError(el, m); if (m) ok = false; }
     if (!ok) return;
-    const subject = `FraudLens enquiry from ${$('#c-name').value.trim()}`;
-    const body = `${$('#c-msg').value.trim()}\n\n${$('#c-name').value.trim()}\n${$('#c-email').value.trim()}`;
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    $('#form-ok').textContent = 'Your email app is opening with the message ready. Press send there.';
+    if (!FORM_KEY) { $('#form-err').textContent = 'The contact form is not connected yet. Please try again later.'; return; }
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: FORM_KEY,
+          subject: `FraudLens enquiry from ${$('#c-name').value.trim()}`,
+          from_name: 'FraudLens website',
+          name: $('#c-name').value.trim(),
+          email: $('#c-email').value.trim(),
+          message: $('#c-msg').value.trim(),
+          botcheck: form.elements.botcheck.checked,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) throw new Error(data.message || 'failed');
+      form.reset();
+      $('#form-ok').textContent = 'Thank you! Your message has been sent. You will get a reply by email soon.';
+    } catch {
+      $('#form-err').textContent = 'Could not send your message. Please try again in a minute.';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Send message';
+    }
   });
 }
 

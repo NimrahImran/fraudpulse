@@ -256,9 +256,10 @@ input[type='range'] { width: 100%; accent-color: var(--red); margin-top: 8px; }
 /* contact */
 .contact { display: grid; grid-template-columns: 1fr 1.1fr; gap: clamp(32px, 6vw, 80px); align-items: center; }
 .contact h2 { margin-bottom: 20px; }
-.mail { display: inline-flex; align-items: center; gap: 12px; margin-top: 28px; font-weight: 600; font-size: 17px; overflow-wrap: anywhere; }
-.mail:hover { color: var(--red); }
-.contact-form { padding: 30px; display: grid; gap: 16px; }
+.contact-points { list-style: none; margin: 28px 0 0; padding: 0; display: grid; gap: 14px; }
+.contact-points li { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 16px; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.contact-form { position: relative; padding: 30px; display: grid; gap: 16px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .field textarea { resize: vertical; min-height: 120px; }
 .contact-form .btn-red { justify-self: start; }
