@@ -1,6 +1,6 @@
 # FraudLens · AI fraud detection
 
-[![CI](https://github.com/NimrahImran/fraudlens/actions/workflows/ci.yml/badge.svg)](https://github.com/NimrahImran/fraudlens/actions/workflows/ci.yml)
+[![CI](https://github.com/NimrahImran/fraudpulse/actions/workflows/ci.yml/badge.svg)](https://github.com/NimrahImran/fraudpulse/actions/workflows/ci.yml)
 [![Live demo](https://img.shields.io/badge/live%20demo-online-ff1f2d)](https://fraudpulse-ai.vercel.app)
 [![License: MIT](https://img.shields.io/badge/license-MIT-e3101d)](LICENSE)
 
@@ -9,7 +9,7 @@ happens, decides in under a millisecond, and explains why.
 
 **Live:** https://fraudpulse-ai.vercel.app · **API docs:** https://fraudpulse-ai.vercel.app/api/docs
 
-![FraudLens](public/og-image.jpg)
+![FraudLens hero](docs/hero.jpg)
 
 Built by **Nimra Imran**, AI Engineer.
 
