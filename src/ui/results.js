@@ -29,8 +29,8 @@ export function initResults(m) {
   if ($('#r-fp-sub')) $('#r-fp-sub').textContent = '';
   const b = m.baseline;
   const row = (name, v, col) => `<div class="vs-row"><span>${name}</span><div class="vs-bar"><i style="width:${v * 100}%;background:${col}"></i></div><b>${pct(v)}</b></div>`;
-  $('#r-vs').innerHTML = row('FraudLens', at.recall, 'var(--red)') + row('Bank rules', b.recall, '#6b5b5c');
-  if ($('#r-vs-sub')) $('#r-vs-sub').textContent = `Simple rules catch ${pct(b.recall)} of fraud with ${int(b.fp)} false alarms. FraudLens catches ${pct(at.recall)} with ${int(at.fp)}.`;
+  $('#r-vs').innerHTML = row('FraudPulse', at.recall, 'var(--red)') + row('Bank rules', b.recall, '#6b5b5c');
+  if ($('#r-vs-sub')) $('#r-vs-sub').textContent = `Simple rules catch ${pct(b.recall)} of fraud with ${int(b.fp)} false alarms. FraudPulse catches ${pct(at.recall)} with ${int(at.fp)}.`;
 
   // data scientist panel
   const toggle = $('#ds-toggle');

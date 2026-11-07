@@ -1,7 +1,7 @@
-# auto-generated red palette of blender_assets.py
-"""Render the glowing 3D visuals used in the FraudPulse cards with Blender (bpy).
+"""Render the red glowing 3D visuals used in the FraudPulse feature cards with Blender (bpy).
 
-Run:  python ml/blender_assets.py  ->  writes PNGs to public/img/3d/
+Run:  python ml/blender_assets_red.py [grid slab capsules icons]  ->  PNGs in public/img/3d-red/
+Then: python ml/glow_post_red.py  ->  adds the glow and writes .webp
 Every scene is built from code, so it can be re-rendered in any colour.
 """
 import math

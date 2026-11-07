@@ -1,4 +1,4 @@
-"""FraudLens API: real-time card fraud scoring with explanations.
+"""FraudPulse API: real-time card fraud scoring with explanations.
 
 Runs as a single Vercel Python function (all /api/* routes are rewritten here)
 and locally with:  uvicorn api.index:app --reload
@@ -31,7 +31,7 @@ Category = Literal["grocery", "fuel", "restaurants", "fashion", "electronics", "
 Channel = Literal["chip_in_store", "contactless", "online", "atm"]
 
 app = FastAPI(
-    title="FraudLens API",
+    title="FraudPulse API",
     version=VERSION,
     description=(
         "Real-time card fraud detection. Send a transaction, get a risk score, "
@@ -207,11 +207,11 @@ def contact(body: ContactIn):
 
     name = re.sub(r"[\r\n]+", " ", body.name.strip())
     msg = EmailMessage()
-    msg["Subject"] = f"FraudLens enquiry from {name}"
-    msg["From"] = f"FraudLens website <{user}>"
+    msg["Subject"] = f"FraudPulse enquiry from {name}"
+    msg["From"] = f"FraudPulse website <{user}>"
     msg["To"] = user
     msg["Reply-To"] = f"{name} <{body.email}>"   # press Reply in Gmail to answer the visitor directly
-    msg.set_content(f"New message from the FraudLens website\n\nName: {name}\nEmail: {body.email}\n\n{body.message.strip()}\n")
+    msg.set_content(f"New message from the FraudPulse website\n\nName: {name}\nEmail: {body.email}\n\n{body.message.strip()}\n")
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ssl.create_default_context(), timeout=15) as smtp:
             smtp.login(user, password)

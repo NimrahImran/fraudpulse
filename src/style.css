@@ -295,8 +295,8 @@ input[type='range'] { width: 100%; accent-color: var(--red); margin-top: 8px; }
   .secure { left: 0; right: 0; top: 96px; font-size: 28vw; }
   .robot { left: 50%; top: 140px; width: min(80vw, 470px); transform: translateX(-46%); }
   .map { left: 0; width: 80%; top: 52%; }
-  .f1 { left: 12px; right: auto; top: 64%; }
-  .f2 { left: auto; right: 12px; top: 50%; }
+  .f1 { left: 12px; right: auto; top: 80%; }
+  .f2 { left: auto; right: 12px; top: 68%; }
   .arcs { width: 80vw; }
 }
 @media (max-width: 600px) {
@@ -311,8 +311,8 @@ input[type='range'] { width: 100%; accent-color: var(--red); margin-top: 8px; }
   .features { grid-template-columns: 1fr; }
   .row2 { grid-template-columns: 1fr; }
   .float { padding: 9px 12px; }
-  .f1 { left: 10px; top: 66%; }
-  .f2 { right: 10px; top: 46%; max-width: 170px; }
+  .f1 { left: 10px; top: 82%; }
+  .f2 { right: 10px; top: 66%; max-width: 170px; }
   .hero h1 { font-size: clamp(40px, 12vw, 56px); }
   .imp-row { grid-template-columns: 110px 1fr 46px; }
   .card-table td:first-child { width: 100px; }
