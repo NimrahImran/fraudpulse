@@ -1,4 +1,4 @@
-"""FraudPulse API: real-time card fraud scoring with explanations.
+"""FraudLens API: real-time card fraud scoring with explanations.
 
 Runs as a single Vercel Python function (all /api/* routes are rewritten here)
 and locally with:  uvicorn api.index:app --reload
@@ -7,13 +7,17 @@ from __future__ import annotations
 
 import math
 import os
+import re
+import smtplib
+import ssl
 import sys
 import time
+from email.message import EmailMessage
 from typing import Literal
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from fastapi import FastAPI, Query  # noqa: E402
+from fastapi import FastAPI, HTTPException, Query  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from pydantic import BaseModel, Field, field_validator  # noqa: E402
 
@@ -27,7 +31,7 @@ Category = Literal["grocery", "fuel", "restaurants", "fashion", "electronics", "
 Channel = Literal["chip_in_store", "contactless", "online", "atm"]
 
 app = FastAPI(
-    title="FraudPulse API",
+    title="FraudLens API",
     version=VERSION,
     description=(
         "Real-time card fraud detection. Send a transaction, get a risk score, "
@@ -161,3 +165,59 @@ def model_info():
     m = get_model()
     return {"features": m.features, "categories": m.categories, "channels": m.channels,
             "metrics": m.metrics}
+
+
+# ---------------------------------------------------------------- contact form
+# Messages are sent from and to your own Gmail with a Gmail App Password.
+# Set in Vercel (Settings -> Environment Variables):
+#   GMAIL_USER          your Gmail address
+#   GMAIL_APP_PASSWORD  the 16-character app password from Google
+EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]{2,}$")
+_recent: dict[str, list[float]] = {}
+
+
+class ContactIn(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: str = Field(..., max_length=200)
+    message: str = Field(..., min_length=10, max_length=5000)
+    botcheck: bool = False
+
+    @field_validator("email")
+    @classmethod
+    def valid_email(cls, v: str) -> str:
+        v = v.strip()
+        if not EMAIL_RE.match(v):
+            raise ValueError("Enter a valid email")
+        return v
+
+
+@app.post("/api/contact", tags=["contact"], summary="Send a message to the site owner's Gmail")
+def contact(body: ContactIn):
+    if body.botcheck:                       # hidden field filled in: a bot, pretend it worked
+        return {"ok": True}
+    user = os.environ.get("GMAIL_USER", "").strip()
+    password = os.environ.get("GMAIL_APP_PASSWORD", "").replace(" ", "")
+    if not user or not password:
+        raise HTTPException(503, "Contact form is not configured yet")
+    now = time.time()                       # 5 messages per sender per hour (per warm instance)
+    hits = [t for t in _recent.get(body.email.lower(), []) if now - t < 3600]
+    if len(hits) >= 5:
+        raise HTTPException(429, "Too many messages, try again later")
+    _recent[body.email.lower()] = hits + [now]
+
+    name = re.sub(r"[\r\n]+", " ", body.name.strip())
+    msg = EmailMessage()
+    msg["Subject"] = f"FraudLens enquiry from {name}"
+    msg["From"] = f"FraudLens website <{user}>"
+    msg["To"] = user
+    msg["Reply-To"] = f"{name} <{body.email}>"   # press Reply in Gmail to answer the visitor directly
+    msg.set_content(f"New message from the FraudLens website\n\nName: {name}\nEmail: {body.email}\n\n{body.message.strip()}\n")
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ssl.create_default_context(), timeout=15) as smtp:
+            smtp.login(user, password)
+            smtp.send_message(msg)
+    except smtplib.SMTPAuthenticationError:
+        raise HTTPException(502, "Email login failed, check the app password")
+    except Exception:
+        raise HTTPException(502, "Could not send the message, try again later")
+    return {"ok": True}

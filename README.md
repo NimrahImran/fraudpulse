@@ -52,7 +52,10 @@ Vercel function. One prediction takes about 0.1 ms.
 
 ## Contact form
 
-The contact form sends messages through [Web3Forms](https://web3forms.com) (free). Add the access key as the environment variable `VITE_WEB3FORMS_KEY` in Vercel and redeploy; messages then arrive in your inbox. No email address is shown on the site.
+Messages go to `POST /api/contact`, which sends them to your own Gmail over SMTP. In Vercel add two
+environment variables and redeploy: `GMAIL_USER` (your Gmail address) and `GMAIL_APP_PASSWORD`
+(a 16-character Google App Password). Press Reply in Gmail to answer the visitor directly. No email
+address is shown on the site.
 
 ## API
 
@@ -62,6 +65,7 @@ The contact form sends messages through [Web3Forms](https://web3forms.com) (free
 | POST | `/api/predict/batch` | Score up to 5,000 payments |
 | GET | `/api/feed` | Synthetic scored stream |
 | GET | `/api/model` | Metrics, curves, threshold table |
+| POST | `/api/contact` | Contact form, sent to the owner's Gmail |
 | GET | `/api/health` | Status |
 
 ```bash

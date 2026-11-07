@@ -70,3 +70,46 @@ def test_engine_matches_lightgbm():
     ref = booster.predict(X)
     for row, p in zip(X, ref):
         assert abs(model.score(list(row))[0] - p) < 1e-6
+
+
+# ---------------------------------------------------------------- contact form
+GOOD = {"name": "Sara Khan", "email": "sara@company.com", "message": "We want to cut card fraud."}
+
+
+def test_contact_not_configured(monkeypatch):
+    monkeypatch.delenv("GMAIL_USER", raising=False)
+    monkeypatch.delenv("GMAIL_APP_PASSWORD", raising=False)
+    assert client.post("/api/contact", json=GOOD).status_code == 503
+
+
+def test_contact_validation():
+    assert client.post("/api/contact", json={**GOOD, "email": "not-an-email"}).status_code == 422
+    assert client.post("/api/contact", json={**GOOD, "message": "hi"}).status_code == 422
+
+
+def test_contact_bot_is_ignored(monkeypatch):
+    monkeypatch.delenv("GMAIL_USER", raising=False)
+    assert client.post("/api/contact", json={**GOOD, "botcheck": True}).json() == {"ok": True}
+
+
+def test_contact_sends_mail(monkeypatch):
+    import api.index as mod
+    sent = {}
+
+    class FakeSMTP:
+        def __init__(self, host, port, **kw): sent["host"] = (host, port)
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def login(self, u, p): sent["login"] = (u, p)
+        def send_message(self, m): sent["msg"] = m
+
+    monkeypatch.setenv("GMAIL_USER", "owner@gmail.com")
+    monkeypatch.setenv("GMAIL_APP_PASSWORD", "abcd efgh ijkl mnop")
+    monkeypatch.setattr(mod.smtplib, "SMTP_SSL", FakeSMTP)
+    mod._recent.clear()
+    r = client.post("/api/contact", json=GOOD)
+    assert r.status_code == 200 and r.json() == {"ok": True}
+    assert sent["host"] == ("smtp.gmail.com", 465)
+    assert sent["login"] == ("owner@gmail.com", "abcdefghijklmnop")
+    assert sent["msg"]["To"] == "owner@gmail.com"
+    assert "sara@company.com" in sent["msg"]["Reply-To"]

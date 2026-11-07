@@ -13,8 +13,6 @@ import { $, $$, fieldError } from './util.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Web3Forms access key (free). Set VITE_WEB3FORMS_KEY in Vercel; messages then arrive in your inbox.
-const FORM_KEY = import.meta.env.VITE_WEB3FORMS_KEY || '';
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine = window.matchMedia('(pointer: fine)').matches;
 
@@ -104,28 +102,23 @@ function initContact() {
     let ok = true;
     for (const [sel, fn] of rules) { const el = $(sel); const m = fn(el.value); fieldError(el, m); if (m) ok = false; }
     if (!ok) return;
-    if (!FORM_KEY) { $('#form-err').textContent = 'The contact form is not connected yet. Please try again later.'; return; }
     btn.disabled = true; btn.textContent = 'Sending…';
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          access_key: FORM_KEY,
-          subject: `FraudLens enquiry from ${$('#c-name').value.trim()}`,
-          from_name: 'FraudLens website',
           name: $('#c-name').value.trim(),
           email: $('#c-email').value.trim(),
           message: $('#c-msg').value.trim(),
           botcheck: form.elements.botcheck.checked,
         }),
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data.success === false) throw new Error(data.message || 'failed');
+      if (!res.ok) throw new Error(res.status === 503 ? 'off' : 'failed');
       form.reset();
       $('#form-ok').textContent = 'Thank you! Your message has been sent. You will get a reply by email soon.';
-    } catch {
-      $('#form-err').textContent = 'Could not send your message. Please try again in a minute.';
+    } catch (err) {
+      $('#form-err').textContent = err.message === 'off' ? 'The contact form is not connected yet. Please try again later.' : 'Could not send your message. Please try again in a minute.';
     } finally {
       btn.disabled = false; btn.textContent = 'Send message';
     }
