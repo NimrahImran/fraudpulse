@@ -3,285 +3,254 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>FraudPulse · AI fraud detection</title>
-  <meta name="description" content="FraudPulse checks every card payment the moment it happens and explains every decision. Live 3D demo with a real ML model. Built by Nimra Imran." />
-  <meta name="theme-color" content="#04140e" />
+  <title>FraudLens · AI Fraud Detection</title>
+  <meta name="description" content="FraudLens is an AI fraud detection platform that checks every card payment in real time, blocks fraud and explains every decision. Built by Nimra Imran." />
+  <meta name="theme-color" content="#060102" />
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="FraudPulse" />
+  <meta property="og:site_name" content="FraudLens" />
   <meta property="og:url" content="%VITE_SITE_URL%/" />
-  <meta property="og:title" content="FraudPulse · AI fraud detection" />
-  <meta property="og:description" content="AI that checks every card payment in under a millisecond and explains why. Live 3D demo. Built by Nimra Imran." />
+  <meta property="og:title" content="FraudLens · Stop fraud before it happens" />
+  <meta property="og:description" content="AI that checks every card payment in under a millisecond, blocks fraud and explains why. Built by Nimra Imran." />
   <meta property="og:image" content="%VITE_SITE_URL%/og-image.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="FraudPulse: Catching every fraud on the pulse" />
+  <meta property="og:image:alt" content="FraudLens: Stop fraud before it happens" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="FraudPulse · AI fraud detection" />
-  <meta name="twitter:description" content="AI that checks every card payment in under a millisecond and explains why." />
+  <meta name="twitter:title" content="FraudLens · Stop fraud before it happens" />
+  <meta name="twitter:description" content="AI that checks every card payment in under a millisecond, blocks fraud and explains why." />
   <meta name="twitter:image" content="%VITE_SITE_URL%/og-image.jpg" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
+  <link rel="preload" as="image" href="/img/robot.webp" />
 </head>
 <body>
-  <div id="loader" role="status" aria-live="polite">
-    <div class="loader-inner">
-      <svg class="loader-mark" viewBox="0 0 64 64" aria-hidden="true">
-        <rect x="6" y="14" width="52" height="36" rx="7" fill="none" stroke="#a4e3cf" stroke-width="1.6" />
-        <rect x="12" y="20" width="9" height="7" rx="1.5" fill="#e8d9b5" />
-        <path class="beat" d="M8 38 H22 L26 30 L31 45 L36 26 L40 38 H56" fill="none" stroke="#c9f2e3" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" />
-      </svg>
-      <div class="loader-title">FraudPulse</div>
-      <div class="loader-sub" id="loader-sub">Waking up the AI…</div>
-      <div class="loader-bar"><i id="loader-bar"></i></div>
-    </div>
-  </div>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="logo" viewBox="0 0 40 44">
+        <path d="M20 1.5 37 7.6v13.1c0 10.4-7 18.6-17 21.8C10 39.3 3 31.1 3 20.7V7.6L20 1.5Z" fill="#e3101d"/>
+        <path d="M20 5.4 33.4 10.2v10.5c0 8.3-5.5 14.9-13.4 17.6V5.4Z" fill="#a50a14"/>
+        <circle cx="18.6" cy="19.6" r="6.4" fill="none" stroke="#fff" stroke-width="2.8"/>
+        <path d="m23.4 24.4 5 5" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
 
-  <canvas id="gl" aria-hidden="true"></canvas>
-
-  <header class="topbar">
-    <a class="logo" href="#hero" aria-label="FraudPulse home">
-      <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="14" width="52" height="36" rx="7" fill="#0b2a1f" stroke="#a4e3cf" stroke-width="2.4"/><rect x="12" y="20" width="9" height="7" rx="1.5" fill="#e8d9b5"/><path d="M8 38 H22 L26 30 L31 45 L36 26 L40 38 H56" fill="none" stroke="#c9f2e3" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg>
-      <span>FraudPulse</span>
+  <header class="nav" id="nav">
+    <a class="brand" href="#top" aria-label="FraudLens home">
+      <svg class="brand-mark" aria-hidden="true"><use href="#logo"/></svg>
+      <span class="brand-text"><b><em>Fraud</em>Lens</b><small>AI FRAUD DETECTION</small></span>
     </a>
-    <div class="top-right">
-      <span class="mode-badge" id="mode-badge" title="The cloud API is unreachable, so the model is running inside your browser">Edge mode</span>
-      <a class="pill" href="#contact">Contact us <span class="dot"></span></a>
-    </div>
+    <nav class="links" aria-label="Sections">
+      <a href="#features" data-sec="features">Features <i class="chip" aria-hidden="true"></i></a>
+      <a href="#scan" data-sec="scan">Live Scan</a>
+      <a href="#results" data-sec="results">Results</a>
+      <a href="#about" data-sec="about">About</a>
+      <a href="#contact" data-sec="contact">Contact</a>
+    </nav>
+    <a class="btn-outline" href="#scan">Live Fraud Scan</a>
   </header>
 
-  <a class="scroll-down" href="#problem"><span class="sd-icon"></span>Scroll down</a>
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero" id="hero">
+      <div class="hero-bg" aria-hidden="true">
+        <div class="glow g1"></div><div class="glow g2"></div>
+        <svg class="arcs" viewBox="0 0 400 400"><g fill="none" stroke="rgba(255,40,50,.13)" stroke-width="1.2"><circle cx="0" cy="400" r="120"/><circle cx="0" cy="400" r="160"/><circle cx="0" cy="400" r="200"/><circle cx="0" cy="400" r="240"/><circle cx="0" cy="400" r="280"/><circle cx="0" cy="400" r="320"/></g></svg>
+      </div>
 
-  <nav class="dock" aria-label="Sections">
-    <a href="#hero" data-sec="hero">Home</a>
-    <a href="#scanner" data-sec="scanner">Scanner</a>
-    <a href="#results" data-sec="results">Results</a>
-    <a href="#contact" data-sec="contact">Contact</a>
-    <a href="#about" data-sec="about">About</a>
-  </nav>
+      <div class="hero-stage">
+        <div class="secure" aria-hidden="true">SECURE</div>
+        <div class="map" aria-hidden="true">
+          <img src="/img/worldmap.svg" alt="" />
+          <span class="pin" style="left:47.5%;top:30%"><svg viewBox="0 0 24 32"><path d="M12 1C6 1 1.5 5.6 1.5 11.4 1.5 19 12 31 12 31s10.5-12 10.5-19.6C22.5 5.6 18 1 12 1Z" fill="#ff1f2d"/><circle cx="12" cy="11.5" r="4.2" fill="#2a0205"/></svg></span>
+        </div>
+        <div class="robot" id="robot">
+          <img src="/img/robot.webp" alt="Glossy black AI android with a glowing red visor, the FraudLens guardian" width="508" height="1120" fetchpriority="high" />
+        </div>
 
-  <main>
-    <!-- 1 · HERO -->
-    <section id="hero" data-shape="0">
-      <div class="hero-grid">
-        <div class="hero-slot" id="hero-slot" aria-hidden="true"></div>
-        <div class="hero-left">
-          <span class="tag reveal">[ AI fraud detection ]</span>
-          <h1 class="hero-title" aria-label="Catching every fraud on the pulse.">
-            <span class="line"><span class="split">Catching</span></span>
-            <span class="line"><span class="split">every fraud</span></span>
-          </h1>
-          <a class="pill pill-solid reveal" href="#scanner">Try the scanner <span class="dot"></span></a>
+        <div class="float f1" aria-hidden="true">
+          <span class="f-ico"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z" fill="none" stroke="#fff" stroke-width="1.8"/><path d="m9 9 6 6m0-6-6 6" stroke="#ff3b45" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <span><b>Payment blocked</b><small>$1,840 · 3 AM · new device</small></span>
         </div>
-        <p class="hero-note reveal">FraudPulse checks every card payment the moment it happens, decides in under a millisecond, and tells you why.</p>
-        <div class="hero-right" aria-hidden="true">
-          <div class="hero-title">
-            <span class="line"><span class="split">on the</span></span>
-            <span class="line"><span class="split">pulse.</span></span>
-          </div>
+        <div class="float f2" aria-hidden="true">
+          <span class="f-top"><b class="f-num" data-metric="recall">83%</b><span class="f-dots"><i></i><i></i><i></i><i></i><i></i></span></span>
+          <small>Fraud caught on 80,000 unseen payments</small>
         </div>
+      </div>
+
+      <div class="hero-copy">
+        <h1><span class="ln">Stop Fraud</span><span class="ln">Before It Happens</span></h1>
+        <p class="sub">AI Fraud Detection Platform</p>
+        <p class="desc">AI-powered platform that checks every card payment in real time, blocks fraud and explains why.</p>
+        <a class="btn-red" href="#scan">Start Protecting Now</a>
       </div>
     </section>
 
-    <!-- dust flow between hero and problem -->
-    <div id="flow" class="flow" data-shape="1" aria-hidden="true"></div>
-
-    <!-- 2 · PROBLEM -->
-    <section id="problem" data-shape="2">
-      <div class="problem-grid">
-        <div class="problem-text">
-          <h2 class="big reveal">See every payment.<br/>Spot every <span class="hot">fraud</span>.<br/><span class="dim">In one place.</span></h2>
-          <p class="lead reveal">Only 4 in every 1,000 card payments are fraud. FraudPulse finds those 4 without stopping the other 996 honest customers.</p>
-          <a class="pill reveal" href="#scanner">See it work <span class="dot"></span></a>
-        </div>
-        <div id="beam-anchor" class="beam-slot" aria-hidden="true"></div>
-      </div>
-    </section>
-
-    <!-- 3 · SCANNER -->
-    <section id="scanner" data-shape="3">
+    <!-- FEATURES -->
+    <section class="sec" id="features">
       <div class="wrap">
-        <div class="sec-head center">
-          <span class="tag reveal">[ live demo ]</span>
-          <h2 class="reveal">Scan a payment</h2>
-          <p class="lead reveal">Pick a payment below and scan it. The real AI model checks it and explains why.</p>
+        <div class="sec-head">
+          <div><p class="eyebrow">What FraudLens does</p><h2>Catch the fraud,<br />not your customers</h2></div>
+          <p class="sec-lead">Every payment is checked in under a millisecond. Real customers pass straight through, fraud is stopped, and every decision comes with plain reasons.</p>
         </div>
-        <div class="scanner-frame reveal" id="scanner-frame">
-          <i class="lightbar top"></i><i class="lightbar bottom"></i>
-          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
-          <div class="scan-anchor" id="scan-anchor"></div>
-          <div class="laser"></div>
-          <div class="scan-meta">
-            <div class="mono" id="scan-date">2026/11/06</div>
-            <div class="mono scan-label" id="scan-tag">CARD SCAN · READY</div>
-          </div>
-        </div>
-
-        <div class="float-card scan-panel reveal" id="scan-panel">
-          <div class="presets" id="presets"></div>
-          <div class="panel-row">
-            <div class="preset-desc" id="preset-desc"></div>
-            <button class="pill pill-solid scan-btn" type="button" id="scan-btn">Scan payment <span class="dot"></span></button>
-          </div>
-          <button class="link-btn" type="button" id="edit-toggle" aria-expanded="false" aria-controls="scan-form">Enter your own details</button>
-          <form id="scan-form" class="fields" hidden novalidate>
-            <div class="field"><label for="f-amount">Amount (USD)</label><input id="f-amount" name="amount" type="number" min="0.5" step="0.01" inputmode="decimal" /><div class="field-err"></div></div>
-            <div class="field"><label for="f-avg">Usual spend (USD)</label><input id="f-avg" name="customer_avg_amount" type="number" min="0.5" step="0.01" inputmode="decimal" /><div class="field-err"></div></div>
-            <div class="field"><label for="f-cat">Shop type</label><select id="f-cat" name="merchant_category"></select></div>
-            <div class="field"><label for="f-ch">Paid by</label><select id="f-ch" name="channel"></select></div>
-            <div class="field"><label for="f-hour">Hour (0–23)</label><input id="f-hour" name="hour" type="number" min="0" max="23" step="1" inputmode="numeric" /><div class="field-err"></div></div>
-            <div class="field"><label for="f-dist">Km from home</label><input id="f-dist" name="distance_km" type="number" min="0" step="1" inputmode="numeric" /><div class="field-err"></div></div>
-            <div class="field"><label for="f-cnt">Payments today</label><input id="f-cnt" name="txn_count_24h" type="number" min="1" step="1" inputmode="numeric" /><div class="field-err"></div></div>
-            <div class="field"><label for="f-age">Account age (days)</label><input id="f-age" name="account_age_days" type="number" min="0" step="1" inputmode="numeric" /><div class="field-err"></div></div>
-            <div class="field"><label for="f-fail">Wrong PIN tries</label><input id="f-fail" name="failed_attempts_1h" type="number" min="0" step="1" inputmode="numeric" /><div class="field-err"></div></div>
-            <div class="toggles">
-              <label class="tog"><input type="checkbox" name="country_mismatch" /> Abroad</label>
-              <label class="tog"><input type="checkbox" name="new_device" /> New phone</label>
-            </div>
-          </form>
-          <div class="err-box" id="scan-err" role="alert"></div>
-        </div>
-
-        <div class="result-card float-card" id="result" aria-live="polite" hidden>
-          <div class="result-top">
-            <div class="score"><span id="score-num">0</span><small>/100 risk</small></div>
-            <div>
-              <span class="decision" id="decision"></span>
-              <p class="verdict" id="verdict-text"></p>
-            </div>
-          </div>
-          <ul class="why" id="why"></ul>
-          <div class="tech-line mono" id="tech-line"></div>
+        <div class="features">
+          <article class="feat reveal"><div class="feat-img"><img src="/img/3d-red/slab.webp" alt="" loading="lazy" /></div><h3>Real-time scoring</h3><p>Each payment gets a risk score from 0 to 100 in about 0.1 ms, before money leaves the account.</p></article>
+          <article class="feat reveal"><div class="feat-img"><img src="/img/3d-red/grid.webp" alt="" loading="lazy" /></div><h3>Pattern detection</h3><p>Learns five fraud patterns: stolen cards, account takeover, card testing, abroad spikes and late-night bursts.</p></article>
+          <article class="feat reveal"><div class="feat-img"><img src="/img/3d-red/icons.webp" alt="" loading="lazy" /></div><h3>Explained decisions</h3><p>Shows exactly why a payment was blocked, so the fraud team and the customer understand it.</p></article>
+          <article class="feat reveal"><div class="feat-img"><img src="/img/3d-red/capsules.webp" alt="" loading="lazy" /></div><h3>Fewer false alarms</h3><p>Only 1 in 450 honest payments is flagged, and those go to a quick human check, not a hard decline.</p></article>
         </div>
       </div>
     </section>
 
-    <!-- 4 · SPEED: dust falls into floating glass cards -->
-    <section id="speed" data-shape="4">
-      <div class="speed-stage">
-        <div class="glass-card main-card reveal" id="stream-card">
-          <div class="gc-icon" aria-hidden="true"><svg viewBox="0 0 40 20"><path d="M0 11 H11 L14 4 L19 17 L24 2 L27 11 H40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
-          <h3>Real-time fraud detection.<br/>Under 1 millisecond.</h3>
-          <p>Every card payment is checked the moment it happens, before any money moves.</p>
-        </div>
-        <div class="glass-card side-card left">
-          <h3>Every decision explained.</h3>
-          <p>Not just "fraud". FraudPulse shows the reasons in plain words.</p>
-        </div>
-        <div class="glass-card side-card right">
-          <h3>83% of fraud caught.</h3>
-          <p>Tested on 80,000 payments it had never seen.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 5 · RESULTS -->
-    <section id="results" data-shape="5">
+    <!-- LIVE SCAN -->
+    <section class="sec" id="scan">
       <div class="wrap">
-        <div class="sec-head center">
-          <h2 class="reveal">Built to <span class="pulse-ico" aria-hidden="true"><svg viewBox="0 0 40 20"><path d="M0 11 H11 L14 4 L19 17 L24 2 L27 11 H40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg></span> catch fraud,<br/>not honest customers.</h2>
-          <p class="lead reveal">Tested on 80,000 card payments the AI had never seen before.</p>
+        <div class="sec-head">
+          <div><p class="eyebrow">Live fraud scan</p><h2>Check a payment<br />yourself</h2></div>
+          <p class="sec-lead">Pick an example or enter your own payment details. The real trained model scores it and tells you why.</p>
         </div>
-        <div class="duo">
-          <div class="img-card c-grid reveal">
-            <img src="/img/3d/grid.webp" alt="" loading="lazy" decoding="async" />
-            <div class="img-text bottom"><span class="label">Every payment</span><h3>Every card payment becomes a point on the grid. FraudPulse watches them all, live.</h3></div>
+        <div class="scan-grid">
+          <div class="panel scan-panel reveal">
+            <div class="presets" id="presets" role="group" aria-label="Example payments"></div>
+            <p class="preset-desc" id="preset-desc"></p>
+            <form id="scan-form" class="fields" novalidate>
+              <div class="field"><label for="f-amount">Amount (USD)</label><input id="f-amount" name="amount" type="number" min="0.5" step="0.01" inputmode="decimal" /><div class="field-err"></div></div>
+              <div class="field"><label for="f-avg">Usual spend (USD)</label><input id="f-avg" name="customer_avg_amount" type="number" min="0.5" step="0.01" inputmode="decimal" /><div class="field-err"></div></div>
+              <div class="field"><label for="f-cat">Shop type</label><select id="f-cat" name="merchant_category"></select></div>
+              <div class="field"><label for="f-ch">Paid by</label><select id="f-ch" name="channel"></select></div>
+              <div class="field"><label for="f-hour">Hour (0–23)</label><input id="f-hour" name="hour" type="number" min="0" max="23" step="1" inputmode="numeric" /><div class="field-err"></div></div>
+              <div class="field"><label for="f-dist">Km from home</label><input id="f-dist" name="distance_km" type="number" min="0" step="1" inputmode="numeric" /><div class="field-err"></div></div>
+              <div class="field"><label for="f-cnt">Payments today</label><input id="f-cnt" name="txn_count_24h" type="number" min="1" step="1" inputmode="numeric" /><div class="field-err"></div></div>
+              <div class="field"><label for="f-age">Account age (days)</label><input id="f-age" name="account_age_days" type="number" min="0" step="1" inputmode="numeric" /><div class="field-err"></div></div>
+              <div class="field"><label for="f-fail">Wrong PIN tries</label><input id="f-fail" name="failed_attempts_1h" type="number" min="0" step="1" inputmode="numeric" /><div class="field-err"></div></div>
+              <label class="check"><input type="checkbox" name="country_mismatch" /> <span>Used abroad</span></label>
+              <label class="check"><input type="checkbox" name="new_device" /> <span>New device</span></label>
+              <button class="btn-red scan-btn" type="submit" id="scan-btn">Scan payment</button>
+            </form>
+            <div class="err-box" id="scan-err" role="alert"></div>
           </div>
-          <div class="img-card c-slab reveal">
-            <img src="/img/3d/slab.webp" alt="" loading="lazy" decoding="async" />
-            <div class="img-text top"><span class="label">Explainable</span><h3>Not just "fraud". Every decision comes with its reasons, in plain words.</h3></div>
-          </div>
-        </div>
-        <div class="trio">
-          <div class="img-card tall c-caps reveal">
-            <img src="/img/3d/capsules.webp" alt="" loading="lazy" decoding="async" />
-            <div class="img-text bottom">
-              <span class="label">Fraud caught</span>
-              <div class="big-num"><span id="r-caught">0</span><span class="unit"> of 100</span></div>
-              <div class="dots" id="r-dots" aria-hidden="true"></div>
-            </div>
-          </div>
-          <div class="img-card tall c-icons reveal">
-            <img src="/img/3d/icons.webp" alt="" loading="lazy" decoding="async" />
-            <div class="img-text bottom">
-              <span class="label">Honest customers stopped</span>
-              <div class="big-num" id="r-fp">—</div>
-              <p id="r-fp-sub"></p>
-              <div id="r-vs"></div>
-            </div>
-          </div>
-          <div class="img-card tall c-ring reveal">
-            <img src="/img/3d/ring.webp" alt="" loading="lazy" decoding="async" />
-            <div class="img-text bottom">
-              <span class="label">Money saved on test data</span>
-              <div class="big-num" id="r-money">$0</div>
-              <p id="r-money-sub"></p>
-              <button class="pill" type="button" id="ds-toggle" aria-expanded="false" aria-controls="ds-panel">Show technical details <span class="dot"></span></button>
-            </div>
-          </div>
-        </div>
 
-        <div class="ds-panel" id="ds-panel" hidden>
-          <div class="ds-grid">
-            <div class="ds-card"><h3>ROC curve</h3><div class="sub" id="ds-roc-sub"></div><div class="chart" id="ds-roc"></div></div>
-            <div class="ds-card"><h3>Precision–recall curve</h3><div class="sub" id="ds-pr-sub"></div><div class="chart" id="ds-pr"></div></div>
-            <div class="ds-card">
-              <h3>Confusion matrix</h3><div class="sub" id="ds-cm-sub"></div><div class="cm" id="ds-cm"></div>
-              <label class="th-label" for="strict">Decision threshold <b id="th-val"></b></label>
-              <input type="range" id="strict" min="1" max="99" step="1" value="6" />
+          <div class="panel result reveal" id="result" aria-live="polite">
+            <div class="res-top">
+              <span class="mono res-tag" id="scan-tag">READY TO SCAN</span>
+              <span class="mono res-mode" id="mode-badge" hidden title="The cloud API is unreachable, so the model runs in your browser">Edge mode</span>
             </div>
-            <div class="ds-card"><h3>Feature importance</h3><div class="sub">Share of total split gain</div><div id="ds-imp"></div></div>
-            <div class="ds-card wide"><h3>Model card</h3><div class="sub">How the model was built, and its limits</div><table class="card-table" id="ds-card"></table></div>
+            <div class="gauge" id="gauge">
+              <svg viewBox="0 0 200 200" aria-hidden="true">
+                <circle cx="100" cy="100" r="84" class="g-track"/>
+                <circle cx="100" cy="100" r="84" class="g-bar" id="g-bar"/>
+              </svg>
+              <div class="g-val"><span id="score-num">–</span><small>risk / 100</small></div>
+              <div class="scanline" aria-hidden="true"></div>
+            </div>
+            <div class="decision" id="decision">Waiting for a payment</div>
+            <p class="verdict" id="verdict-text">Choose an example on the left, or type your own details, then press Scan payment.</p>
+            <ul class="why" id="why"></ul>
+            <div class="tech-line mono" id="tech-line"></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 6 · CONTACT + ABOUT -->
-    <section id="contact" data-shape="6">
-      <div class="contact-wrap">
-        <div class="sec-head center">
-          <span class="tag reveal">[ contact ]</span>
-          <h2 class="big reveal">Let's stop fraud<br/>together.</h2>
-          <p class="lead reveal">Need fraud detection trained on your own data, or a custom AI system for your business? Send a message.</p>
+    <!-- RESULTS -->
+    <section class="sec" id="results">
+      <div class="wrap">
+        <div class="sec-head">
+          <div><p class="eyebrow">Measured results</p><h2>Tested on 80,000<br />unseen payments</h2></div>
+          <p class="sec-lead">Fraud is only 0.4% of payments, so accuracy means nothing. FraudLens is judged on fraud caught, false alarms and money saved.</p>
         </div>
-        <form class="float-card contact-form reveal" id="contact-form" novalidate>
-          <div class="row2">
-            <div class="field"><label for="c-name">Your name</label><input id="c-name" autocomplete="name" placeholder="Sara Khan" /><div class="field-err"></div></div>
-            <div class="field"><label for="c-email">Email</label><input id="c-email" type="email" autocomplete="email" placeholder="sara@company.com" /><div class="field-err"></div></div>
+        <div class="stats">
+          <article class="panel stat reveal">
+            <p class="stat-k">Net money saved</p>
+            <div class="big" id="r-money">$0</div>
+            <p class="stat-p" id="r-money-sub"></p>
+          </article>
+          <article class="panel stat reveal">
+            <p class="stat-k">Fraud caught</p>
+            <div class="big"><span id="r-caught">0</span><span class="unit"> of 100</span></div>
+            <div class="dots" id="r-dots" aria-hidden="true"></div>
+          </article>
+          <article class="panel stat reveal">
+            <p class="stat-k">Honest payments flagged</p>
+            <div class="big" id="r-fp">–</div>
+            <div class="vs" id="r-vs"></div>
+            <p class="stat-p" id="r-vs-sub"></p>
+          </article>
+        </div>
+
+        <div class="ds">
+          <button class="btn-outline ds-btn" type="button" id="ds-toggle" aria-expanded="false" aria-controls="ds-panel">Show technical details <span class="plus" aria-hidden="true">+</span></button>
+          <div class="ds-panel" id="ds-panel" hidden>
+            <div class="ds-grid">
+              <div class="panel ds-card"><h3>ROC curve</h3><div class="sub" id="ds-roc-sub"></div><div class="chart" id="ds-roc"></div></div>
+              <div class="panel ds-card"><h3>Precision–recall curve</h3><div class="sub" id="ds-pr-sub"></div><div class="chart" id="ds-pr"></div></div>
+              <div class="panel ds-card">
+                <h3>Confusion matrix</h3><div class="sub" id="ds-cm-sub"></div><div class="cm" id="ds-cm"></div>
+                <label class="th-label" for="strict">Decision threshold <b id="th-val"></b></label>
+                <input type="range" id="strict" min="1" max="99" step="1" value="6" />
+              </div>
+              <div class="panel ds-card"><h3>Feature importance</h3><div class="sub">Share of total split gain</div><div id="ds-imp"></div></div>
+              <div class="panel ds-card wide"><h3>Model card</h3><div class="sub">How the model was built, and its limits</div><table class="card-table" id="ds-card"></table></div>
+            </div>
           </div>
-          <div class="field"><label for="c-msg">Message</label><textarea id="c-msg" placeholder="We process 200k card payments a month and want to cut fraud."></textarea><div class="field-err"></div></div>
-          <button class="pill pill-solid" type="submit">Send message <span class="dot"></span></button>
-          <div class="form-ok" id="form-ok" role="status"></div>
-        </form>
+        </div>
       </div>
     </section>
 
-    <section id="about" data-shape="6">
-      <div class="wrap about-grid">
+    <!-- ABOUT -->
+    <section class="sec" id="about">
+      <div class="wrap about">
         <div class="portrait reveal">
-          <div class="glow-ring"></div>
+          <div class="p-glow" aria-hidden="true"></div>
           <picture>
             <source srcset="/img/nimra.webp" type="image/webp" />
             <img src="/img/nimra.png" alt="Nimra Imran" width="1186" height="1186" loading="lazy" decoding="async" />
           </picture>
+          <div class="p-tag"><b>Nimra Imran</b><small>AI Engineer</small></div>
         </div>
         <div class="about-text">
-          <span class="tag reveal">[ about ]</span>
-          <h2 class="reveal">Nimra Imran</h2>
-          <p class="role reveal">AI Engineer</p>
-          <p class="lead reveal">I build AI systems that solve real business problems: fraud detection, customer churn prediction, chatbots, RAG systems and AI automation. I trained in AI and Data Science at SMIT (Saylani Mass IT Training).</p>
-          <p class="lead reveal">FraudPulse is built end to end by me: the data, the model, the API and this 3D website.</p>
-          <div class="skills reveal">
-            <span>Python</span><span>Machine learning</span><span>LightGBM</span><span>FastAPI</span><span>LLMs and RAG</span><span>Agentic AI</span><span>Three.js</span>
+          <p class="eyebrow">About</p>
+          <h2>Built end to end by<br /><span class="red">Nimra Imran</span></h2>
+          <p class="sec-lead">I am an AI Engineer. I build AI systems that solve real business problems: fraud detection, customer churn prediction, chatbots, RAG systems and AI automation. I trained in AI and Data Science at SMIT (Saylani Mass IT Training).</p>
+          <div class="proj">
+            <h3><em>Fraud</em>Lens, the project</h3>
+            <p>I generated 400,000 realistic card payments, trained a LightGBM model and tuned its decision threshold to save the most money. The trees are served by my own lightweight engine on a FastAPI backend, and every prediction is explained.</p>
+            <ul class="proj-facts">
+              <li><b>0.98</b><span>ROC-AUC</span></li>
+              <li><b>0.1 ms</b><span>per payment</span></li>
+              <li><b>11</b><span>signals checked</span></li>
+            </ul>
           </div>
-          <a class="pill pill-solid reveal" href="#contact">Hire me <span class="dot"></span></a>
+          <div class="skills"><span>Python</span><span>Machine learning</span><span>LightGBM</span><span>FastAPI</span><span>LLMs and RAG</span><span>Agentic AI</span><span>Blender</span></div>
         </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="sec" id="contact">
+      <div class="wrap contact">
+        <div>
+          <p class="eyebrow">Contact</p>
+          <h2>Let's stop fraud<br />together</h2>
+          <p class="sec-lead">Want FraudLens for your business, or need an AI engineer for your team? Send a message and I will reply soon.</p>
+          <a class="mail" href="mailto:nimrahimran28@gmail.com"><span class="f-ico"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="#fff" stroke-width="1.8"/><path d="m4 7 8 6 8-6" fill="none" stroke="#ff3b45" stroke-width="1.8"/></svg></span>nimrahimran28@gmail.com</a>
+        </div>
+        <form class="panel contact-form reveal" id="contact-form" novalidate>
+          <div class="row2">
+            <div class="field"><label for="c-name">Your name</label><input id="c-name" autocomplete="name" placeholder="Sara Khan" /><div class="field-err"></div></div>
+            <div class="field"><label for="c-email">Email</label><input id="c-email" type="email" autocomplete="email" placeholder="sara@company.com" /><div class="field-err"></div></div>
+          </div>
+          <div class="field"><label for="c-msg">Message</label><textarea id="c-msg" rows="5" placeholder="We process 200k card payments a month and want to cut fraud."></textarea><div class="field-err"></div></div>
+          <button class="btn-red" type="submit">Send message</button>
+          <div class="form-ok" id="form-ok" role="status"></div>
+        </form>
       </div>
     </section>
   </main>
 
-  <footer>
-    <span>FraudPulse · Built by <b>Nimra Imran</b></span>
+  <footer class="foot">
+    <a class="brand" href="#top" aria-label="FraudLens home"><svg class="brand-mark" aria-hidden="true"><use href="#logo"/></svg><span class="brand-text"><b><em>Fraud</em>Lens</b></span></a>
+    <span>Built by <b>Nimra Imran</b></span>
     <span class="foot-links"><a href="/api/docs" target="_blank" rel="noopener">API docs</a><a href="https://github.com/NimrahImran/fraudlens" target="_blank" rel="noopener">GitHub</a><span>© <span id="year">2026</span></span></span>
   </footer>
 

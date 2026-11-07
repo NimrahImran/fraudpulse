@@ -26,11 +26,11 @@ export function initResults(m) {
   $('#r-money-sub').textContent = `${int(at.tp)} of ${int(fraudTotal)} frauds stopped, after paying for every false alarm.`;
   const fpRate = at.fp / (at.fp + at.tn);
   $('#r-fp').textContent = `1 in ${int(1 / fpRate)}`;
-  $('#r-fp-sub').textContent = 'And those go to a quick human check, not a hard decline.';
+  if ($('#r-fp-sub')) $('#r-fp-sub').textContent = '';
   const b = m.baseline;
   const row = (name, v, col) => `<div class="vs-row"><span>${name}</span><div class="vs-bar"><i style="width:${v * 100}%;background:${col}"></i></div><b>${pct(v)}</b></div>`;
-  $('#r-vs').innerHTML = row('FraudPulse', at.recall, 'var(--mint-2)') + row('Bank rules', b.recall, 'var(--gold)');
-  if ($('#r-vs-sub')) $('#r-vs-sub').textContent = `Simple rules catch ${pct(b.recall)} of fraud with ${int(b.fp)} false alarms. FraudPulse catches ${pct(at.recall)} with ${int(at.fp)}.`;
+  $('#r-vs').innerHTML = row('FraudLens', at.recall, 'var(--red)') + row('Bank rules', b.recall, '#6b5b5c');
+  if ($('#r-vs-sub')) $('#r-vs-sub').textContent = `Simple rules catch ${pct(b.recall)} of fraud with ${int(b.fp)} false alarms. FraudLens catches ${pct(at.recall)} with ${int(at.fp)}.`;
 
   // data scientist panel
   const toggle = $('#ds-toggle');
@@ -84,12 +84,12 @@ function curve(pts, xl, yl, diag, mark) {
   const area = `${d}L${x(pts[pts.length - 1][0])},${y(0)}L${x(pts[0][0])},${y(0)}Z`;
   const ticks = [0, 0.25, 0.5, 0.75, 1];
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${yl} against ${xl}">
-    ${ticks.map((t) => `<line x1="${x(0)}" x2="${x(1)}" y1="${y(t)}" y2="${y(t)}" stroke="rgba(164,227,207,.12)"/><text x="${P.l - 6}" y="${y(t) + 4}" font-size="10" text-anchor="end" fill="#8fb3a5">${t}</text><text x="${x(t)}" y="${H - P.b + 14}" font-size="10" text-anchor="middle" fill="#8fb3a5">${t}</text>`).join('')}
-    ${diag ? `<line x1="${x(0)}" y1="${y(0)}" x2="${x(1)}" y2="${y(1)}" stroke="#e8d9b5" stroke-dasharray="4 4" opacity=".6"/>` : ''}
-    <path d="${area}" fill="rgba(127,224,191,.14)"/>
-    <path d="${d}" fill="none" stroke="#7fe0bf" stroke-width="2.2"/>
-    ${mark ? `<circle cx="${x(mark[0])}" cy="${y(mark[1])}" r="5" fill="#ff6a4d"/><text x="${x(mark[0]) - 8}" y="${y(mark[1]) - 9}" font-size="10" text-anchor="end" fill="#ff6a4d">chosen threshold</text>` : ''}
-    <text x="${(x(0) + x(1)) / 2}" y="${H - 4}" font-size="11" text-anchor="middle" fill="#b9d3c8">${xl}</text>
-    <text x="12" y="${(y(0) + y(1)) / 2}" font-size="11" text-anchor="middle" fill="#b9d3c8" transform="rotate(-90 12 ${(y(0) + y(1)) / 2})">${yl}</text>
+    ${ticks.map((t) => `<line x1="${x(0)}" x2="${x(1)}" y1="${y(t)}" y2="${y(t)}" stroke="rgba(255,255,255,.08)"/><text x="${P.l - 6}" y="${y(t) + 4}" font-size="10" text-anchor="end" fill="#8d7b7c">${t}</text><text x="${x(t)}" y="${H - P.b + 14}" font-size="10" text-anchor="middle" fill="#8d7b7c">${t}</text>`).join('')}
+    ${diag ? `<line x1="${x(0)}" y1="${y(0)}" x2="${x(1)}" y2="${y(1)}" stroke="#8d7b7c" stroke-dasharray="4 4" opacity=".6"/>` : ''}
+    <path d="${area}" fill="rgba(255,31,45,.14)"/>
+    <path d="${d}" fill="none" stroke="#ff1f2d" stroke-width="2.2"/>
+    ${mark ? `<circle cx="${x(mark[0])}" cy="${y(mark[1])}" r="5" fill="#ffffff"/><text x="${x(mark[0]) - 8}" y="${y(mark[1]) - 9}" font-size="10" text-anchor="end" fill="#ffffff">chosen threshold</text>` : ''}
+    <text x="${(x(0) + x(1)) / 2}" y="${H - 4}" font-size="11" text-anchor="middle" fill="#b9a7a8">${xl}</text>
+    <text x="12" y="${(y(0) + y(1)) / 2}" font-size="11" text-anchor="middle" fill="#b9a7a8" transform="rotate(-90 12 ${(y(0) + y(1)) / 2})">${yl}</text>
   </svg>`;
 }

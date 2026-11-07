@@ -1,15 +1,15 @@
-# FraudPulse · AI fraud detection
+# FraudLens · AI fraud detection
 
 [![CI](https://github.com/NimrahImran/fraudlens/actions/workflows/ci.yml/badge.svg)](https://github.com/NimrahImran/fraudlens/actions/workflows/ci.yml)
-[![Live demo](https://img.shields.io/badge/live%20demo-online-7fe0bf)](https://fraudpulse-ai.vercel.app)
-[![License: MIT](https://img.shields.io/badge/license-MIT-a4e3cf)](LICENSE)
+[![Live demo](https://img.shields.io/badge/live%20demo-online-ff1f2d)](https://fraudpulse-ai.vercel.app)
+[![License: MIT](https://img.shields.io/badge/license-MIT-e3101d)](LICENSE)
 
-**Catching every fraud on the pulse.** FraudPulse checks every card payment the moment it
+**Stop fraud before it happens.** FraudLens checks every card payment the moment it
 happens, decides in under a millisecond, and explains why.
 
 **Live:** https://fraudpulse-ai.vercel.app · **API docs:** https://fraudpulse-ai.vercel.app/api/docs
 
-![FraudPulse](public/og-image.jpg)
+![FraudLens](public/og-image.jpg)
 
 Built by **Nimra Imran**, AI Engineer.
 
@@ -17,14 +17,13 @@ Built by **Nimra Imran**, AI Engineer.
 
 ## The website
 
-A cinematic 3D scroll experience: Three.js particles with soft bloom on a dark mint glow, plus glowing 3D visuals rendered in Blender (`ml/blender_assets.py`, scripted with `bpy`).
+A red and black design with a glossy black AI android rendered in Blender (`ml/blender_robot.py`, scripted with `bpy`) and red 3D feature visuals (`ml/blender_assets_red.py`).
 
-1. **Hero:** a living particle wave that rises from the centre, flows right to left and breathes up and down
-2. **Problem:** the card dissolves into a dust sphere, then a column of light with fraud pooling at its base
-3. **Scanner:** pick a payment and scan it; the real model returns a risk score, a decision and its reasons
-4. **Speed:** dust falls into floating glass cards: real-time, explained, measured
-5. **Results:** Blender-rendered glowing cards with money saved, fraud caught and false alarms on unseen data, plus a panel for data scientists (ROC, PR curve, confusion matrix, feature importance, model card)
-6. **Contact and About**
+1. **Hero:** the android in front of a giant SECURE, a dotted world map and live result cards
+2. **Features:** real-time scoring, pattern detection, explained decisions, fewer false alarms
+3. **Live fraud scan:** pick an example or enter your own payment; the real model returns a risk score, a decision and its reasons
+4. **Results:** money saved, fraud caught and false alarms on unseen data, plus a panel for data scientists (ROC, PR curve, confusion matrix with a threshold slider, feature importance, model card)
+5. **About and Contact**
 
 ## Model results (80,000 unseen test payments)
 
@@ -38,7 +37,7 @@ A cinematic 3D scroll experience: Three.js particles with soft bloom on a dark m
 | Net money saved on the test set | **$262,061** |
 | Typical rule set ("amount > $1,000 OR foreign country") | 46% recall, 2,024 false alarms |
 
-**Imbalance:** fraud is 0.4% of payments, so accuracy is meaningless. FraudPulse keeps
+**Imbalance:** fraud is 0.4% of payments, so accuracy is meaningless. FraudLens keeps
 calibrated probabilities and tunes the decision threshold on validation data to maximise net
 money saved ($15 per false alarm, $25 chargeback fee per missed fraud).
 
@@ -74,7 +73,7 @@ curl -X POST https://fraudpulse-ai.vercel.app/api/predict \
 ```
 api/        FastAPI app (Vercel function): routes, tree engine, reasons, demo stream
 ml/         data generator and training script
-src/        frontend (Vite, Three.js, GSAP, Lenis)
+src/        frontend (Vite, GSAP, Lenis)
 public/     static assets
 tests/      API and engine tests
 ```
@@ -89,8 +88,8 @@ npm install
 npm run dev                                   # frontend, proxies /api to :8000
 ```
 
-Retrain: `python ml/train.py` · Tests: `pytest` · Re-render 3D visuals: `pip install bpy && python ml/blender_assets.py && python ml/glow_post.py`
+Retrain: `python ml/train.py` · Tests: `pytest` · Re-render 3D visuals: `pip install bpy && python ml/blender_robot.py && python ml/blender_assets_red.py && python ml/glow_post_red.py`
 
 ---
 
-© Nimra Imran · FraudPulse
+© Nimra Imran · FraudLens
