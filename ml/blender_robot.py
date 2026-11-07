@@ -9,14 +9,14 @@ import os
 import sys
 
 import bpy
-from mathutils import Vector
+from mathutils import Euler, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "public", "img")
 SRC = next((a for a in sys.argv[1:] if a.endswith(".glb")), os.path.join(HERE, "Xbot.glb"))
 SAMPLES = int(os.environ.get("SAMPLES", "160"))
 RES = int(os.environ.get("RES", "100"))
-YAW = float(os.environ.get("YAW", "-34"))
+YAW = float(os.environ.get("YAW", "-52"))
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sc = bpy.context.scene
@@ -52,10 +52,10 @@ def glow(name, strength):
     return m
 
 
-SHELL = principled("shell", (0.01, 0.01, 0.011, 1), 1.0, 0.06, coat=1.0)
+SHELL = principled("shell", (0.012, 0.011, 0.012, 1), 1.0, 0.14, coat=1.0)   # black glass-like gloss
 SEAM = principled("seam", (0.02, 0.018, 0.018, 1), 1.0, 0.12)
 LINE = glow("line", 3.0)
-EYE = glow("eye", 14.0)
+EYE = glow("eye", 5.0)
 VISOR = glow("visor", 1.2)
 
 bpy.ops.import_scene.gltf(filepath=SRC)
@@ -63,6 +63,14 @@ for o in list(bpy.data.objects):
     if o.type == "MESH" and o.name.startswith("Icosphere"):
         bpy.data.objects.remove(o)
 arm = next(o for o in bpy.data.objects if o.type == "ARMATURE")
+HEAD_TILT = float(os.environ.get("TILT", "16"))
+HEAD_TURN = float(os.environ.get("TURN", "-14"))
+arm.animation_data.action = bpy.data.actions.get("idle"); sc.frame_set(1)
+idle = {pb.name: (pb.rotation_quaternion.copy(), pb.location.copy()) for pb in arm.pose.bones}
+arm.animation_data.action = None
+for pb in arm.pose.bones:                         # rest pose while measuring and placing the eyes
+    pb.rotation_mode = "QUATERNION"; pb.rotation_quaternion = (1, 0, 0, 0); pb.location = (0, 0, 0)
+bpy.context.view_layer.update()
 for o in bpy.data.objects:
     if o.type != "MESH":
         continue
@@ -85,6 +93,7 @@ fwd = ((eyes[0] + eyes[1]) / 2 - head); fwd.z = 0; fwd.normalize()
 surf = next(o for o in bpy.data.objects if o.type == "MESH" and "Surface" in o.name)
 ez = (eyes[0].z + eyes[1].z) / 2
 pts = [surf.matrix_world @ v.co for v in surf.data.vertices]
+rest_pts = pts
 band = [p for p in pts if abs(p.z - ez) < 0.012 and p.z > 1.3]
 cx = sum(p.x for p in band) / len(band); cy = sum(p.y for p in band) / len(band)
 rx = max(abs(p.x - cx) for p in band); ry = max(abs(p.y - cy) for p in band)
@@ -146,19 +155,41 @@ def crest(lift, bevel, mat, bins=60):
     return curve_from(out, bevel, mat, False)
 
 
-# like the reference: only two glowing eyes on a dark visor, no lines over the helmet
-front = math.atan2(fwd.y, fwd.x)
-horizontal_band(ez, 0.0012, 0.0011, VISOR, centre=front, span=math.radians(38))   # faint visor slit
-for e in eyes:                                    # bright eye cores
+# like the reference: two glowing eyes on the dark face, no lines over the helmet
+pose_store = idle
+eye_objs = []
+for e in eyes:
     d = Vector((e.x - cx, e.y - cy, 0)); d.normalize()
-    sl = [p for p in pts if abs(p.z - ez) < 0.006]
-    near = [math.hypot(p.x - cx, p.y - cy) for p in sl if (Vector((p.x - cx, p.y - cy, 0)).normalized()).dot(d) > 0.96]
+    sl = [p for p in rest_pts if abs(p.z - ez) < 0.006]
+    near = [math.hypot(p.x - cx, p.y - cy) for p in sl if (Vector((p.x - cx, p.y - cy, 0)).normalized()).dot(d) > 0.97]
     r = max(near) if near else max(rx, ry)
-    pos = Vector((cx + d.x * (r + 0.002), cy + d.y * (r + 0.002), ez))
+    pos = Vector((cx + d.x * (r - 0.002), cy + d.y * (r - 0.002), ez))
     bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, location=pos)
-    s = bpy.context.object; s.scale = (0.018, 0.018, 0.0075); s.data.materials.append(EYE)
-    bpy.ops.object.light_add(type="POINT", location=pos + Vector((d.x, d.y, 0)) * 0.03)   # eye glow spilling on the face
-    gl = bpy.context.object; gl.data.energy = 2.5; gl.data.color = (1, 0.04, 0.02); gl.data.shadow_soft_size = 0.01
+    s = bpy.context.object; s.scale = (0.018, 0.018, 0.008); s.data.materials.append(EYE); eye_objs.append(s)
+    bpy.ops.object.light_add(type="POINT", location=pos + Vector((d.x, d.y, 0)) * 0.025)   # eye glow spilling on the face
+    gl = bpy.context.object; gl.data.energy = 3.5; gl.data.color = (1, 0.04, 0.02); gl.data.shadow_soft_size = 0.01; eye_objs.append(gl)
+bpy.context.view_layer.update()
+for o in eye_objs:                                # eyes follow the head when it tilts
+    mw = o.matrix_world.copy()
+    o.parent = arm; o.parent_type = "BONE"; o.parent_bone = "mixamorig:Head"
+    bpy.context.view_layer.update()
+    o.matrix_world = mw
+
+# pose like the reference: chest out, broader torso, head bowed and turned a little
+def rot(name, x=0.0, y=0.0, z=0.0):
+    pb = arm.pose.bones[name]; q0, _ = pose_store[name]
+    pb.rotation_mode = "QUATERNION"
+    pb.rotation_quaternion = q0 @ Euler((math.radians(x), math.radians(y), math.radians(z))).to_quaternion()
+for name, (q, loc) in pose_store.items():
+    arm.pose.bones[name].rotation_quaternion = q; arm.pose.bones[name].location = loc
+rot("mixamorig:Spine1", x=-4)
+rot("mixamorig:Spine2", x=-7)
+rot("mixamorig:Neck", x=10)
+rot("mixamorig:Head", x=HEAD_TILT, y=HEAD_TURN)
+for n in ("mixamorig:Neck", "mixamorig:LeftArm", "mixamorig:RightArm"):
+    arm.data.bones[n].inherit_scale = "NONE"
+arm.pose.bones["mixamorig:Spine2"].scale = (1.12, 1.0, 1.1)   # broader, deeper chest
+arm.pose.bones["mixamorig:Spine1"].scale = (1.06, 1.0, 1.05)
 
 # turn everything so the robot looks to the left of the frame
 bpy.ops.object.empty_add(location=(0, 0, 0))
@@ -182,13 +213,32 @@ def area(loc, target, energy, color, size, size_y=None):
 
 C = Vector((0, 0, 1.45))
 RED = (1, 0.03, 0.02)
-# black glossy shell shaped only by long red strip reflections along its edges (like the reference)
-area((0.9, 0.9, 1.6), C, 160, RED, 0.06, 1.6)       # strip, back right
-area((-1.0, 0.7, 1.6), C, 130, RED, 0.06, 1.6)      # strip, back left
-area((1.1, -0.4, 1.6), C, 70, RED, 0.05, 1.4)       # strip on the right cheek and shoulder
-area((0.0, 0.4, 2.6), C, 60, RED, 0.06, 0.9)        # strip above: top edge of the helmet
-area((-0.9, -1.1, 1.9), C, 18, (1, 0.03, 0.02), 0.5) # soft red fill so the black reads as glossy
-area((-0.6, -1.3, 2.3), C, 10, (1, 0.94, 0.94), 0.05) # tiny white key for gloss
+
+
+def panel(loc, size, strength, color=RED):
+    """Emissive card, invisible to the camera, that shows up only as a reflection in the black gloss."""
+    bpy.ops.mesh.primitive_plane_add(size=1, location=loc)
+    p = bpy.context.object; p.scale = (size[0], size[1], 1)
+    p.rotation_euler = (C - Vector(loc)).to_track_quat("Z", "Y").to_euler()
+    m = bpy.data.materials.new("panel"); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
+    em = nt.nodes.new("ShaderNodeEmission"); em.inputs[0].default_value = (*color, 1); em.inputs[1].default_value = strength
+    out = nt.nodes.new("ShaderNodeOutputMaterial"); nt.links.new(em.outputs[0], out.inputs[0])
+    p.data.materials.append(m); p.visible_camera = False; p.visible_shadow = False
+    return p
+
+
+# big soft red glow on the right side of the head and body (like the reference)
+panel((1.15, -0.15, 1.65), (0.8, 1.6), 2.4)
+area((0.9, 0.9, 1.6), C, 170, RED, 0.06, 1.6)       # strip rim, back right
+area((1.15, -0.2, 1.55), C, 60, RED, 0.05, 1.4)     # strip on the right cheek and shoulder
+area((-1.0, 0.7, 1.6), C, 45, RED, 0.04, 1.4)       # faint rim, back left (just the silhouette)
+# deep red depth so the black reads like glass with light inside
+panel((-0.6, -1.2, 1.2), (1.4, 1.2), 0.35)
+panel((0.2, -1.4, 0.8), (1.6, 0.6), 0.25)
+# small red glints across the body
+for loc in [(0.6, -1.1, 2.1), (-0.4, -1.0, 2.2), (0.9, -0.9, 1.1), (-0.8, -0.6, 1.0), (0.3, -1.2, 1.35), (-0.2, -1.2, 1.75)]:
+    panel(loc, (0.05, 0.22), 9)
+area((-0.6, -1.3, 2.3), C, 8, (1, 0.94, 0.94), 0.04) # tiny white key for gloss
 
 bpy.ops.object.camera_add(location=(0.18, -1.3, 1.6))
 cam = bpy.context.object
